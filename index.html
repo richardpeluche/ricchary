@@ -226,6 +226,32 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
   .items-table td{padding:4px 2px}
 }
 
+/* ===== BOTÓN FACTURAR ===== */
+.fact-btn{background:#0d9488;color:#fff;border:none;padding:7px 12px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;margin-left:8px;white-space:nowrap}
+.fact-btn:active{transform:scale(.97)}
+.fact-btn.facturado{background:#16a34a;cursor:default}
+/* Modal de confirmación de factura */
+.fact-overlay{position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;padding:20px}
+.fact-overlay.show{display:flex}
+.fact-box{background:#fff;border-radius:18px;max-width:440px;width:100%;padding:24px;box-shadow:0 12px 40px rgba(0,0,0,.3)}
+.fact-box h3{color:#1A1A2E;font-size:18px;margin-bottom:6px}
+.fact-amb{display:inline-block;font-size:11px;font-weight:800;padding:3px 10px;border-radius:12px;margin-bottom:12px}
+.fact-amb-prueba{background:#fef3c7;color:#b45309}
+.fact-amb-prod{background:#fee2e2;color:#b91c1c}
+.fact-resumen{background:#f8fafc;border-radius:10px;padding:14px;font-size:13px;line-height:1.7;margin:12px 0}
+.fact-resumen b{color:#1A1A2E}
+.fact-check{display:flex;align-items:flex-start;gap:9px;background:#fef9c3;border:1px solid #fde047;border-radius:8px;padding:11px;margin:14px 0;font-size:13px;cursor:pointer}
+.fact-check input{margin-top:2px;width:18px;height:18px;flex-shrink:0}
+.fact-actions{display:flex;gap:10px;margin-top:8px}
+.fact-actions button{flex:1;padding:12px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;border:none}
+.fact-cancel{background:#e5e7eb;color:#374151}
+.fact-confirm{background:#0d9488;color:#fff}
+.fact-confirm:disabled{background:#9ca3af;cursor:not-allowed}
+.fact-status{margin-top:12px;font-size:13px;padding:10px;border-radius:8px;display:none}
+.fact-status.ok{background:#dcfce7;color:#16a34a;display:block}
+.fact-status.err{background:#fee2e2;color:#b91c1c;display:block}
+.fact-status.proc{background:#dbeafe;color:#1565C0;display:block}
+
 /* ===== ONBOARDING ===== */
 .onb-overlay{position:fixed;inset:0;z-index:1000;background:linear-gradient(135deg,#1565C0,#0d3a73);display:none;align-items:center;justify-content:center;padding:20px}
 .onb-overlay.show{display:flex}
@@ -263,6 +289,24 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 
 </head><body><input type="file" id="logoInput" class="img-input" accept="image/*">
 <input type="file" id="refImgInput" class="img-input" accept="image/*" multiple="">
+
+<!-- ===== MODAL FACTURACIÓN ELECTRÓNICA ===== -->
+<div id="factOverlay" class="fact-overlay">
+  <div class="fact-box">
+    <h3>📄 Generar Factura Electrónica</h3>
+    <span class="fact-amb fact-amb-prueba" id="factAmb">🧪 AMBIENTE DE PRUEBAS</span>
+    <div class="fact-resumen" id="factResumen"></div>
+    <label class="fact-check">
+      <input type="checkbox" id="factSeguro">
+      <span>Confirmo que los datos del cliente (RUC/Cédula y dirección) son correctos y deseo emitir esta factura electrónica.</span>
+    </label>
+    <div class="fact-actions">
+      <button class="fact-cancel" id="factCancel">Cancelar</button>
+      <button class="fact-confirm" id="factConfirm" disabled>Emitir Factura</button>
+    </div>
+    <div class="fact-status" id="factStatus"></div>
+  </div>
+</div>
 
 <!-- ===== ONBOARDING / BIENVENIDA ===== -->
 <div id="onboarding" class="onb-overlay">
@@ -380,6 +424,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
     <div class="doc-no">
       <span class="badge">Orden N°</span>
       <input id="docOrden" readonly style="width:90px;background:#f1f5f9;font-weight:700;text-align:center;cursor:default">
+      <button type="button" id="facturarBtn" class="fact-btn" title="Generar factura electrónica (SRI)">📄 Facturar</button>
     </div>
   </div>
   <div class="form-grid-2">
@@ -497,7 +542,7 @@ Este documento es de carácter contrato cliente-ofertador, que firmado constituy
 <div class="action-bar">
   <button class="hist-btn" id="histBtn" style="position:relative"><i class="ti ti-history" aria-hidden="true"></i> Historial<span class="hist-save-badge" id="histSaveBadge">✓ Guardado</span></button>
   <button class="btn btn-outline" id="cfgBtn" title="Configuración"><i class="ti ti-settings" aria-hidden="true"></i> Configuración</button>
-  <button class="btn btn-outline" id="clearBtn"><i class="ti ti-trash" aria-hidden="true"></i> Limpiar</button>
+  <button class="hist-btn" id="saveBtn" style="background:var(--brand);color:#fff;border-color:var(--brand)" title="Guardar cambios de esta cotización"><i class="ti ti-device-floppy" aria-hidden="true"></i> Guardar</button>
   <button class="btn btn-agenda" id="agendaBtn"><i class="ti ti-calendar-plus" aria-hidden="true"></i> Agendar Pedido</button>
   <button class="btn" id="waBtn" style="background:#25D366;color:#fff;border-color:#25D366"><i class="ti ti-brand-whatsapp" aria-hidden="true"></i> WhatsApp</button>
   <button class="btn btn-primary" id="printBtn"><i class="ti ti-printer" aria-hidden="true"></i> Imprimir / PDF</button>
@@ -752,11 +797,10 @@ window.addEventListener('load', ()=>{
   const n = document.getElementById('fNotas');
   const dd = document.getElementById('fDiasEntrega');
   const savedN = localStorage.getItem('cfg_condiciones');
-  const savedD = localStorage.getItem('cfg_dias_entrega');
   if(n && savedN) n.value = savedN;
-  if(dd && savedD) dd.value = savedD;
+  if(dd) dd.value = '30'; // valor por defecto en cotización nueva
   if(n) n.addEventListener('input', ()=>localStorage.setItem('cfg_condiciones', n.value));
-  if(dd) dd.addEventListener('input', ()=>localStorage.setItem('cfg_dias_entrega', dd.value));
+  // (los días de entrega ya NO se guardan global; van por cada cotización)
 });
 
 // ===== ESTADOS DEL PEDIDO (RICCHARY) =====
@@ -833,6 +877,7 @@ function captureCotizacion(){
     atencion: document.getElementById('fAtencion')?.value||'',
     notas: document.getElementById('fNotas')?.value||'',
     iva: document.getElementById('ivaSel')?.value||'0',
+    diasEntrega: document.getElementById('fDiasEntrega')?.value||'30',
     total: document.getElementById('totalVal')?.textContent||'$0,00',
     subtotal: document.getElementById('subtotalVal')?.textContent||'$0,00',
     items: items
@@ -868,6 +913,7 @@ function showHistSaveBadge(){
 // Carga una cotización del historial al formulario
 function cargarCotizacion(cot){
   const _dO=document.getElementById('docOrden'); if(_dO) _dO.value = cot.num||'';
+  if(window.marcarBotonFacturado) setTimeout(window.marcarBotonFacturado, 50);
   document.getElementById('fFecha').value = cot.fecha||'';
   document.getElementById('fCliente').value = cot.cliente||'';
   const _fE=document.getElementById('fEmpresa'); if(_fE && cot.empresa!==undefined) _fE.value = cot.empresa||'';
@@ -880,6 +926,7 @@ function cargarCotizacion(cot){
   document.getElementById('fAtencion').value = cot.atencion||'';
   if(cot.notas!==undefined && !cot._cloud) document.getElementById('fNotas').value = cot.notas||'';
   document.getElementById('ivaSel').value = cot.iva||'0';
+  const _dE=document.getElementById('fDiasEntrega'); if(_dE) _dE.value = cot.diasEntrega||'30';
   // Limpiar e insertar ítems
   document.getElementById('itemsBody').innerHTML='';
   (cot.items||[]).forEach(it=>addRow(it));
@@ -1255,19 +1302,129 @@ document.getElementById('waBtn').onclick=()=>{
   syncStatus('📲 Abriendo WhatsApp...', '#25D366');
 };
 
-document.getElementById('printBtn').onclick=()=>{ guardarCotizacion(); window.print(); };
-document.getElementById('clearBtn').onclick=()=>{
-  if(!confirm('¿Limpiar todos los datos del formulario?'))return;
-  document.getElementById('itemsBody').innerHTML='';
-  ['fEmpresa','fCliente','fMail','fTelefono','fDireccion','fCedula','fAtencion'].forEach(id=>{const el=document.getElementById(id); if(el) el.value='';});
-  setOrdenActual(getNextOrden());
-  const _fA2=document.getElementById('fAbono'); if(_fA2) _fA2.value='';
-  estadoActual='Cotizado'; calcSaldo();
-  document.getElementById('fFecha').value=new Date().toISOString().slice(0,10);
-  calcTotals();
-  clearSig(1);clearSig(2);
-  document.querySelectorAll('.img-slot').forEach(s=>s.remove());
+document.getElementById('saveBtn').onclick=()=>{
+  guardarCotizacion();
+  syncStatus('💾 Cotización guardada', '#1565C0');
 };
+
+document.getElementById('printBtn').onclick=()=>{ guardarCotizacion(); window.print(); };
+// ===== FACTURACIÓN ELECTRÓNICA (DATIL) =====
+(function(){
+  const overlay = ()=>document.getElementById('factOverlay');
+  const seguro  = ()=>document.getElementById('factSeguro');
+  const confirm = ()=>document.getElementById('factConfirm');
+  const status  = ()=>document.getElementById('factStatus');
+
+  function abrirFactura(){
+    const cot = captureCotizacion();
+    // Validaciones mínimas para facturar
+    const faltan = [];
+    if(!cot.cliente) faltan.push('Cliente');
+    if(!cot.cedula) faltan.push('RUC/Cédula');
+    if(!cot.direccion) faltan.push('Dirección');
+    if(!cot.items || !cot.items.length) faltan.push('Al menos un ítem');
+    if(faltan.length){
+      alert('⚠️ Para facturar faltan estos datos obligatorios:\n\n• ' + faltan.join('\n• ') + '\n\nComplétalos y vuelve a intentar.');
+      return;
+    }
+    if(!SYNC_ON){
+      alert('⚠️ La facturación electrónica requiere la versión Pro (sincronización configurada). Configura tu URL en ⚙️ Configuración.');
+      return;
+    }
+
+    // Resumen visual
+    const itemsTxt = cot.items.map(it=>`• ${it.qty} × ${it.desc} — ${it.sub}`).join('<br>');
+    document.getElementById('factResumen').innerHTML =
+      `<b>Cliente:</b> ${cot.cliente}<br>`
+      + `<b>RUC/Cédula:</b> ${cot.cedula}<br>`
+      + `<b>Dirección:</b> ${cot.direccion}<br>`
+      + (cot.mail?`<b>Email:</b> ${cot.mail}<br>`:'')
+      + `<hr style="border:none;border-top:1px solid #e5e7eb;margin:8px 0">`
+      + `${itemsTxt}<br>`
+      + `<hr style="border:none;border-top:1px solid #e5e7eb;margin:8px 0">`
+      + `<b>TOTAL: ${cot.total}</b> (IVA ${cot.iva}%)`;
+
+    seguro().checked = false;
+    confirm().disabled = true;
+    status().className = 'fact-status';
+    status().textContent = '';
+    overlay().classList.add('show');
+  }
+
+  function cerrar(){ overlay().classList.remove('show'); }
+
+  async function emitir(){
+    confirm().disabled = true;
+    status().className = 'fact-status proc';
+    status().textContent = '⏳ Enviando a Datil → SRI... (puede tardar unos segundos)';
+
+    const cot = captureCotizacion();
+    try{
+      const r = await fetch(SYNC_URL, {
+        method:'POST',
+        mode:'no-cors',
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify({
+          accion:'facturar',
+          orden: cot.num,
+          cliente: cot.cliente,
+          cedula: cot.cedula,
+          direccion: cot.direccion,
+          mail: cot.mail,
+          telefono: cot.telefono,
+          iva: cot.iva,
+          total: cot.total,
+          items: cot.items.map(it=>({
+            qty: it.qty, desc: it.desc, price: it.price, sub: it.sub
+          }))
+        })
+      });
+      // En modo no-cors no se lee la respuesta; confirmamos el envío
+      status().className = 'fact-status ok';
+      status().innerHTML = '✅ <b>Factura enviada a Datil.</b><br>'
+        + 'En unos segundos el SRI la autorizará y el RIDE llegará al correo del cliente.<br>'
+        + '<small>Verifica el estado en tu panel de Datil (app.datil.co).</small>';
+      // Marcar la cotización como facturada (local)
+      try{
+        const facts = JSON.parse(localStorage.getItem('ricchary_facturadas')||'{}');
+        facts[cot.num] = new Date().toLocaleString('es-EC');
+        localStorage.setItem('ricchary_facturadas', JSON.stringify(facts));
+        marcarBotonFacturado();
+      }catch(e){}
+    }catch(e){
+      status().className = 'fact-status err';
+      status().textContent = '❌ Error de conexión. Verifica tu internet e inténtalo de nuevo.';
+      confirm().disabled = false;
+    }
+  }
+
+  function marcarBotonFacturado(){
+    const b = document.getElementById('facturarBtn');
+    if(!b) return;
+    const num = document.getElementById('docOrden')?.value;
+    const facts = (()=>{ try{return JSON.parse(localStorage.getItem('ricchary_facturadas')||'{}');}catch(e){return {};} })();
+    if(num && facts[num]){
+      b.textContent = '✅ Facturado';
+      b.classList.add('facturado');
+    }else{
+      b.textContent = '📄 Facturar';
+      b.classList.remove('facturado');
+    }
+  }
+  window.marcarBotonFacturado = marcarBotonFacturado;
+
+  window.addEventListener('load', ()=>{
+    const fb = document.getElementById('facturarBtn');
+    if(fb) fb.onclick = abrirFactura;
+    const fc = document.getElementById('factCancel'); if(fc) fc.onclick = cerrar;
+    const fx = document.getElementById('factConfirm'); if(fx) fx.onclick = emitir;
+    const fs = document.getElementById('factSeguro');
+    if(fs) fs.onchange = ()=>{ confirm().disabled = !fs.checked; };
+    const ov = document.getElementById('factOverlay');
+    if(ov) ov.onclick = e=>{ if(e.target===ov) cerrar(); };
+    marcarBotonFacturado();
+  });
+})();
 
 // ===== ONBOARDING =====
 (function(){
