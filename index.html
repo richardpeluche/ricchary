@@ -189,6 +189,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .btn-hist-load{background:var(--brand);color:#fff;border-color:var(--brand)}
 .btn-hist-agenda{background:#22c55e;color:#fff;border-color:#22c55e}
 .btn-hist-del{background:#fff;color:var(--danger);border-color:var(--danger)}
+.btn-hist-vfact{background:#0d9488;color:#fff;border-color:#0d9488}
+.btn-hist-rfact{background:#fff;color:#0d9488;border-color:#0d9488}
 .estado-sel{font-size:11px;font-weight:700;padding:3px 6px;border-radius:8px;border:1.5px solid;background:#fff;cursor:pointer}
 .badge-nube{display:inline-block;background:#64748b;color:#fff;font-size:9px;font-weight:800;padding:2px 7px;border-radius:10px;margin-left:6px;vertical-align:middle}
 .badge-agendado{display:inline-block;background:#22c55e;color:#fff;font-size:9px;font-weight:800;padding:2px 7px;border-radius:10px;margin-left:6px;vertical-align:middle}
@@ -1010,6 +1012,7 @@ function renderHistorial(){
       <div class="hist-card-actions">
         <button class="btn-hist-load" onclick="cargarCotizacion(window._hist[${idx}])">📂 Cargar en formulario</button>
         <button class="btn-hist-agenda" onclick="agendarDesdeCot(window._hist[${idx}])">${yaAgendado(cot.num)?'🔁 Reagendar':'📅 Agendar'}</button>
+        ${esFacturada(cot)?`<button class="btn-hist-vfact" onclick="verFactura('${cot.num}')">📄 Ver Factura</button><button class="btn-hist-rfact" onclick="reenviarFactura('${cot.num}','${(cot.mail||'').replace(/'/g,'')}')">📧 Reenviar</button>`:''}
         ${cot._cloud?'':`<button class="btn-hist-del" onclick="eliminarCot(${cot.id})">🗑 Eliminar</button>`}
       </div>
     </div>
@@ -1023,6 +1026,60 @@ function eliminarCot(id){
   let hist=getHistory().filter(c=>c.id!==id);
   saveHistory(hist);
   renderHistorial();
+}
+
+// ── FACTURACIÓN: detectar y ver facturas ────────────────────
+function esFacturada(cot){
+  // Facturada si la columna factura (nube) empieza con FACTURADO, o marca local
+  if(cot.factura && String(cot.factura).indexOf('FACTURADO')===0) return true;
+  try{
+    const facts = JSON.parse(localStorage.getItem('ricchary_facturadas')||'{}');
+    if(facts[cot.num]) return true;
+  }catch(e){}
+  return false;
+}
+
+async function verFactura(orden){
+  if(!SYNC_ON){ alert('⚠️ Ver factura requiere la versión Pro (sincronización configurada).'); return; }
+  const url = SYNC_URL + '?accion=verFactura&orden=' + encodeURIComponent(orden);
+  // Abrir ventana en blanco YA (evita bloqueo de popups) y luego cargar el PDF
+  const win = window.open('', '_blank');
+  if(win) win.document.write('<p style="font-family:sans-serif;padding:20px">⏳ Cargando factura #'+orden+'...</p>');
+  try{
+    const r = await fetch(url);
+    const data = await r.json();
+    if(data.ok && data.pdf){
+      // Convertir base64 a blob PDF y mostrarlo
+      const bytes = atob(data.pdf);
+      const arr = new Uint8Array(bytes.length);
+      for(let i=0;i<bytes.length;i++) arr[i]=bytes.charCodeAt(i);
+      const blob = new Blob([arr], {type:'application/pdf'});
+      const blobUrl = URL.createObjectURL(blob);
+      if(win){ win.location.href = blobUrl; }
+      else { window.open(blobUrl,'_blank'); }
+    }else{
+      if(win) win.close();
+      alert('No se pudo cargar la factura: ' + (data.error||'error desconocido'));
+    }
+  }catch(e){
+    if(win) win.close();
+    alert('Error de conexión al cargar la factura.');
+  }
+}
+
+async function reenviarFactura(orden, mail){
+  let email = mail || '';
+  email = prompt('¿A qué correo reenviar la factura #'+orden+'?', email);
+  if(!email) return;
+  const url = SYNC_URL + '?accion=reenviarFactura&orden=' + encodeURIComponent(orden) + '&email=' + encodeURIComponent(email);
+  try{
+    const r = await fetch(url);
+    const data = await r.json();
+    if(data.ok){ alert('✅ Factura reenviada a ' + email); }
+    else { alert('No se pudo reenviar: ' + (data.error||data.respuesta||'error')); }
+  }catch(e){
+    alert('Error de conexión al reenviar la factura.');
+  }
 }
 
 // ── Controles del modal historial ───────────────────────────
@@ -1603,6 +1660,11 @@ async function syncListar(){
         estado: row.estado || 'Cotizado',
         abono: row.abono || '',
         saldo: row.saldo || '',
+        cedula: row.cedula || '',
+        direccion: row.direccion || '',
+        mail: row.mail || '',
+        atencion: row.atencion || '',
+        factura: row.factura || '',
         _cloud: true
       }));
     }
