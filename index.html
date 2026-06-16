@@ -1012,7 +1012,7 @@ function renderHistorial(){
       <div class="hist-card-actions">
         <button class="btn-hist-load" onclick="cargarCotizacion(window._hist[${idx}])">📂 Cargar en formulario</button>
         <button class="btn-hist-agenda" onclick="agendarDesdeCot(window._hist[${idx}])">${yaAgendado(cot.num)?'🔁 Reagendar':'📅 Agendar'}</button>
-        ${esFacturada(cot)?`<button class="btn-hist-vfact" onclick="verFactura('${cot.num}')">📄 Ver Factura</button><button class="btn-hist-rfact" onclick="reenviarFactura('${cot.num}','${(cot.mail||'').replace(/'/g,'')}')">📧 Reenviar</button>`:''}
+        ${esFacturada(cot)?`<button class="btn-hist-vfact" onclick="verFactura('${cot.num}')">📄 Ver Factura</button>`:''}
         ${cot._cloud?'':`<button class="btn-hist-del" onclick="eliminarCot(${cot.id})">🗑 Eliminar</button>`}
       </div>
     </div>
@@ -1041,45 +1041,9 @@ function esFacturada(cot){
 
 async function verFactura(orden){
   if(!SYNC_ON){ alert('⚠️ Ver factura requiere la versión Pro (sincronización configurada).'); return; }
+  // El Apps Script devuelve directamente el PDF embebido en una página; solo abrimos la URL
   const url = SYNC_URL + '?accion=verFactura&orden=' + encodeURIComponent(orden);
-  // Abrir ventana en blanco YA (evita bloqueo de popups) y luego cargar el PDF
-  const win = window.open('', '_blank');
-  if(win) win.document.write('<p style="font-family:sans-serif;padding:20px">⏳ Cargando factura #'+orden+'...</p>');
-  try{
-    const r = await fetch(url);
-    const data = await r.json();
-    if(data.ok && data.pdf){
-      // Convertir base64 a blob PDF y mostrarlo
-      const bytes = atob(data.pdf);
-      const arr = new Uint8Array(bytes.length);
-      for(let i=0;i<bytes.length;i++) arr[i]=bytes.charCodeAt(i);
-      const blob = new Blob([arr], {type:'application/pdf'});
-      const blobUrl = URL.createObjectURL(blob);
-      if(win){ win.location.href = blobUrl; }
-      else { window.open(blobUrl,'_blank'); }
-    }else{
-      if(win) win.close();
-      alert('No se pudo cargar la factura: ' + (data.error||'error desconocido'));
-    }
-  }catch(e){
-    if(win) win.close();
-    alert('Error de conexión al cargar la factura.');
-  }
-}
-
-async function reenviarFactura(orden, mail){
-  let email = mail || '';
-  email = prompt('¿A qué correo reenviar la factura #'+orden+'?', email);
-  if(!email) return;
-  const url = SYNC_URL + '?accion=reenviarFactura&orden=' + encodeURIComponent(orden) + '&email=' + encodeURIComponent(email);
-  try{
-    const r = await fetch(url);
-    const data = await r.json();
-    if(data.ok){ alert('✅ Factura reenviada a ' + email); }
-    else { alert('No se pudo reenviar: ' + (data.error||data.respuesta||'error')); }
-  }catch(e){
-    alert('Error de conexión al reenviar la factura.');
-  }
+  window.open(url, '_blank');
 }
 
 // ── Controles del modal historial ───────────────────────────
@@ -1448,6 +1412,8 @@ document.getElementById('printBtn').onclick=()=>{ guardarCotizacion(); window.pr
         localStorage.setItem('ricchary_facturadas', JSON.stringify(facts));
         marcarBotonFacturado();
       }catch(e){}
+      // Refrescar desde la nube para que el campo "factura" se sincronice a otros dispositivos
+      setTimeout(async ()=>{ try{ await syncListar(); }catch(e){} }, 6000);
     }catch(e){
       status().className = 'fact-status err';
       status().textContent = '❌ Error de conexión. Verifica tu internet e inténtalo de nuevo.';
