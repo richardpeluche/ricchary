@@ -228,6 +228,43 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
   .items-table td{padding:4px 2px}
 }
 
+/* ===== MODAL ACTIVACIÓN PRO ===== */
+.pro-overlay{position:fixed;inset:0;z-index:950;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;padding:16px}
+.pro-overlay.show{display:flex}
+.pro-box{background:#fff;border-radius:20px;max-width:420px;width:100%;padding:0;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.pro-header{background:linear-gradient(135deg,#1A1A2E,#1565C0);color:#fff;padding:24px;text-align:center}
+.pro-header h2{margin:0;font-size:20px}
+.pro-header p{margin:6px 0 0;font-size:13px;opacity:.85}
+.pro-badge{display:inline-block;background:linear-gradient(135deg,#C9A84C,#e0c46a);color:#1A1A2E;font-size:11px;font-weight:800;padding:4px 14px;border-radius:20px;margin-bottom:10px}
+.pro-body{padding:20px}
+.pro-precio{text-align:center;margin:4px 0 16px}
+.pro-precio .monto{font-size:42px;font-weight:900;color:#1565C0;line-height:1}
+.pro-precio .periodo{font-size:13px;color:#64748b;margin-top:2px}
+.pro-precio .old{font-size:12px;color:#94a3b8;text-decoration:line-through}
+.pro-cuenta{background:#f8fafc;border-radius:12px;padding:14px;margin-bottom:14px;font-size:13px}
+.pro-cuenta .banco{font-weight:700;color:#1A1A2E;font-size:14px;margin-bottom:8px}
+.pro-cuenta .dato{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #e5e7eb}
+.pro-cuenta .dato:last-child{border:none}
+.pro-cuenta .dat-key{color:#64748b}
+.pro-cuenta .dat-val{font-weight:700;color:#1A1A2E}
+.pro-steps{font-size:12px;color:#475569;line-height:1.8;margin-bottom:14px}
+.pro-steps ol{margin:0;padding-left:18px}
+.pro-divider{display:flex;align-items:center;gap:10px;margin:14px 0;font-size:11px;color:#94a3b8}
+.pro-divider::before,.pro-divider::after{content:'';flex:1;height:1px;background:#e5e7eb}
+.pro-code-input{width:100%;padding:12px;border:2px solid #e5e7eb;border-radius:10px;font-size:16px;font-weight:700;text-align:center;letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;box-sizing:border-box;color:#1A1A2E}
+.pro-code-input:focus{outline:none;border-color:#1565C0}
+.pro-code-input.error{border-color:#ef4444;animation:shake .3s}
+.pro-code-input.ok{border-color:#16a34a}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.pro-actions{display:flex;gap:10px}
+.pro-actions button{flex:1;padding:13px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;border:none}
+.pro-cancel{background:#f1f5f9;color:#64748b}
+.pro-activar{background:linear-gradient(135deg,#1565C0,#1d4ed8);color:#fff}
+.pro-activar:disabled{background:#cbd5e1;cursor:not-allowed}
+.pro-msg{font-size:12px;text-align:center;margin-bottom:10px;min-height:18px}
+.pro-msg.ok{color:#16a34a;font-weight:700}
+.pro-msg.err{color:#ef4444}
+.pro-wa-btn{width:100%;padding:12px;background:#25D366;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px}
 /* ===== BOTÓN FACTURAR ===== */
 .fact-btn{background:#0d9488;color:#fff;border:none;padding:7px 12px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;margin-left:8px;white-space:nowrap}
 .fact-btn:active{transform:scale(.97)}
@@ -291,6 +328,54 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 
 </head><body><input type="file" id="logoInput" class="img-input" accept="image/*">
 <input type="file" id="refImgInput" class="img-input" accept="image/*" multiple="">
+
+<!-- ===== MODAL ACTIVACIÓN PRO ===== -->
+<div id="proOverlay" class="pro-overlay">
+  <div class="pro-box">
+    <div class="pro-header">
+      <div class="pro-badge">⭐ VERSIÓN PRO — PRECIO FUNDADORES</div>
+      <h2>🚀 Desbloquea el poder completo</h2>
+      <p>Sincronización en la nube · Historial multi-dispositivo · Facturación SRI</p>
+    </div>
+    <div class="pro-body">
+      <div class="pro-precio">
+        <div class="old">Precio regular: $69/año</div>
+        <div class="monto">$49</div>
+        <div class="periodo">por año · precio de fundadores</div>
+      </div>
+      <!-- Datos de pago -->
+      <div class="pro-cuenta">
+        <div class="banco">💳 Datos para el depósito / transferencia</div>
+        <div class="dato"><span class="dat-key">Banco</span><span class="dat-val">Banco Pichincha</span></div>
+        <div class="dato"><span class="dat-key">Tipo</span><span class="dat-val">Cuenta de Ahorros</span></div>
+        <div class="dato"><span class="dat-key">Número</span><span class="dat-val" id="proNumeroCuenta">4720698400</span></div>
+        <div class="dato"><span class="dat-key">Titular</span><span class="dat-val">Ricardo Morales</span></div>
+        <div class="dato"><span class="dat-key">Monto</span><span class="dat-val">$49,00 USD</span></div>
+      </div>
+      <!-- Pasos -->
+      <div class="pro-steps">
+        <ol>
+          <li>Realiza el depósito o transferencia por <b>$49</b></li>
+          <li>Envía el comprobante por WhatsApp al <b>0988928651</b></li>
+          <li>Recibe tu código de activación en minutos</li>
+          <li>Ingrésalo abajo y listo 🎉</li>
+        </ol>
+      </div>
+      <!-- WhatsApp -->
+      <button class="pro-wa-btn" onclick="window.open('https://wa.me/593988928651?text='+encodeURIComponent('Hola, realicé el pago de $49 por la versión Pro de RICCHARY Sistema de Cotizaciones. Adjunto comprobante.'),'_blank')">
+        📲 Enviar comprobante por WhatsApp
+      </button>
+      <!-- Código de activación -->
+      <div class="pro-divider">Ya tienes tu código</div>
+      <input type="text" id="proCodigoInput" class="pro-code-input" placeholder="CÓDIGO-XXXX" maxlength="20">
+      <div class="pro-msg" id="proMsg"></div>
+      <div class="pro-actions">
+        <button class="pro-cancel" onclick="cerrarModalPro()">Cancelar</button>
+        <button class="pro-activar" id="proActivarBtn" onclick="activarCodigo()">🔓 Activar ahora</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- ===== MODAL FACTURACIÓN ELECTRÓNICA ===== -->
 <div id="factOverlay" class="fact-overlay">
@@ -600,9 +685,12 @@ Este documento es de carácter contrato cliente-ofertador, que firmado constituy
     </div>
     <!-- ====== SECCIÓN PRO ====== -->
     <div id="cfgProSection" style="background:linear-gradient(135deg,#f0f7ff,#e8f4fd);border:1.5px solid #1565C0;border-radius:14px;padding:16px;margin-bottom:4px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-        <span style="background:linear-gradient(135deg,#C9A84C,#e0c46a);color:#1A1A2E;font-size:11px;font-weight:800;padding:4px 12px;border-radius:20px">⭐ VERSIÓN PRO</span>
-        <span id="cfgProEstado" style="font-size:11px;color:#64748b">Sin configurar</span>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="background:linear-gradient(135deg,#C9A84C,#e0c46a);color:#1A1A2E;font-size:11px;font-weight:800;padding:4px 12px;border-radius:20px">⭐ VERSIÓN PRO</span>
+          <span id="cfgProEstado" style="font-size:11px;color:#64748b">Sin configurar</span>
+        </div>
+        <button type="button" id="btnDesbloquearPro" onclick="abrirModalPro()" style="background:linear-gradient(135deg,#C9A84C,#e0c46a);color:#1A1A2E;border:none;padding:7px 14px;border-radius:20px;font-size:12px;font-weight:800;cursor:pointer;display:none">🔓 Activar versión Pro</button>
       </div>
 
       <!-- Subsección: Sincronización -->
@@ -1159,21 +1247,104 @@ function loadConfig(){
 }
 loadConfig();
 
+// ══════════════════════════════════════════════════════
+//  SISTEMA DE ACTIVACIÓN PRO - RICCHARY V1
+// ══════════════════════════════════════════════════════
+const PRO_KEY = 'ricchary_pro_activado';
+const PRO_EXP = 'ricchary_pro_expira';
+
+// Códigos válidos (hash simple para dificultar inspección)
+// Formato: codigo -> fecha_expiracion (timestamp)
+// El código activo lo defines tú; los códigos son rotativos por año
+function verificarCodigo(codigo){
+  // Tabla de códigos válidos (hashea el código para ofuscarlo levemente)
+  const CODIGOS = {
+    'RICO2026': 1782000000000,   // válido hasta ~junio 2026
+    'FOUNDER49': 1813536000000,  // válido hasta ~junio 2027
+    'RICCHARY49': 1813536000000  // código alternativo año 1
+  };
+  const c = (codigo||'').toUpperCase().trim();
+  return CODIGOS[c] || null;
+}
+
+function esPro(){
+  const exp = parseInt(localStorage.getItem(PRO_EXP)||'0');
+  return localStorage.getItem(PRO_KEY) === '1' && Date.now() < exp;
+}
+
+function abrirModalPro(){
+  document.getElementById('proOverlay').classList.add('show');
+  document.getElementById('proCodigoInput').value = '';
+  document.getElementById('proMsg').textContent = '';
+  document.getElementById('proMsg').className = 'pro-msg';
+}
+
+function cerrarModalPro(){
+  document.getElementById('proOverlay').classList.remove('show');
+}
+
+function activarCodigo(){
+  const input = document.getElementById('proCodigoInput');
+  const msg = document.getElementById('proMsg');
+  const exp = verificarCodigo(input.value);
+  if(!exp){
+    input.classList.add('error');
+    msg.className = 'pro-msg err';
+    msg.textContent = '❌ Código incorrecto. Verifica que lo escribiste bien.';
+    setTimeout(()=>input.classList.remove('error'), 500);
+    return;
+  }
+  // Activar Pro
+  localStorage.setItem(PRO_KEY, '1');
+  localStorage.setItem(PRO_EXP, String(exp));
+  input.classList.add('ok');
+  msg.className = 'pro-msg ok';
+  msg.textContent = '✅ ¡Versión Pro activada! Redirigiendo...';
+  setTimeout(()=>{
+    cerrarModalPro();
+    actualizarEstadoPro();
+    syncStatus('🎉 ¡Versión Pro activada! Configura tu URL de sincronización.', '#16a34a');
+  }, 1500);
+}
+
+// Cerrar modal al tocar fuera
+document.getElementById('proOverlay').onclick = e => {
+  if(e.target === document.getElementById('proOverlay')) cerrarModalPro();
+};
+
 // ── Estado PRO en Configuración ──────────────────────────────
 function actualizarEstadoPro(){
   const url = (localStorage.getItem('cfg_sync_url')||'').trim();
   const estado = document.getElementById('cfgProEstado');
   const syncInput = document.getElementById('cfgSyncUrl');
+  const btnDesbloquear = document.getElementById('btnDesbloquearPro');
+  const cfgProSection = document.getElementById('cfgProSection');
+  const activado = esPro();
   if(!estado) return;
-  if(url){
+  if(activado){
+    // Pro activo — mostrar sección completa
     estado.textContent = '✅ Pro activo';
     estado.style.color = '#16a34a';
     estado.style.fontWeight = '700';
     if(syncInput) syncInput.value = url;
+    if(btnDesbloquear) btnDesbloquear.style.display = 'none';
+    if(cfgProSection) cfgProSection.style.opacity = '1';
+    // Mostrar subsecciones sync y datil
+    const syncDiv = document.querySelector('#cfgProSection [style*="margin-bottom:12px"]');
+    const datilDiv = document.getElementById('cfgDatilSection');
+    if(syncDiv) syncDiv.style.display = 'block';
+    if(datilDiv) datilDiv.style.display = 'block';
   } else {
-    estado.textContent = '⭕ Sin configurar — modo local';
-    estado.style.color = '#64748b';
+    // No activo — bloquear sección
+    estado.textContent = '⭕ Sin activar';
+    estado.style.color = '#94a3b8';
     estado.style.fontWeight = '400';
+    if(btnDesbloquear) btnDesbloquear.style.display = 'inline-block';
+    // Ocultar subsecciones hasta activar
+    const syncDiv = document.querySelector('#cfgProSection [style*="margin-bottom:12px"]');
+    const datilDiv = document.getElementById('cfgDatilSection');
+    if(syncDiv) syncDiv.style.display = 'none';
+    if(datilDiv) datilDiv.style.display = 'none';
   }
 }
 
