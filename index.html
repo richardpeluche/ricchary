@@ -598,11 +598,61 @@ Este documento es de carácter contrato cliente-ofertador, que firmado constituy
       <input type="text" id="cfgLink" placeholder="Ej: https://linktr.ee/tuempresa">
       <small style="display:block;color:var(--muted);font-size:11px;margin-top:3px">Opcional. Vacío = sin link en mensajes.</small>
     </div>
-    <div class="cfg-group">
-      <label>☁️ URL de sincronización (Apps Script)</label>
-      <input type="text" id="cfgSyncUrl" placeholder="https://script.google.com/macros/s/.../exec">
-      <small style="display:block;color:var(--muted);font-size:11px;margin-top:3px">Opcional. Vacío = modo local.</small>
+    <!-- ====== SECCIÓN PRO ====== -->
+    <div id="cfgProSection" style="background:linear-gradient(135deg,#f0f7ff,#e8f4fd);border:1.5px solid #1565C0;border-radius:14px;padding:16px;margin-bottom:4px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <span style="background:linear-gradient(135deg,#C9A84C,#e0c46a);color:#1A1A2E;font-size:11px;font-weight:800;padding:4px 12px;border-radius:20px">⭐ VERSIÓN PRO</span>
+        <span id="cfgProEstado" style="font-size:11px;color:#64748b">Sin configurar</span>
+      </div>
+
+      <!-- Subsección: Sincronización -->
+      <div style="margin-bottom:12px">
+        <div style="font-size:13px;font-weight:700;color:#1565C0;margin-bottom:6px">☁️ Sincronización en la nube</div>
+        <input type="text" id="cfgSyncUrl" placeholder="https://script.google.com/macros/s/.../exec" style="font-size:12px">
+        <div style="display:flex;gap:8px;margin-top:6px">
+          <button type="button" id="cfgTestSync" style="flex:1;background:#1565C0;color:#fff;border:none;padding:8px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">🔗 Probar conexión</button>
+        </div>
+        <div id="cfgSyncStatus" style="font-size:11px;margin-top:5px;display:none"></div>
+        <!-- Instrucciones colapsables -->
+        <div id="cfgSyncInstrToggle" onclick="document.getElementById('cfgSyncInstr').style.display=document.getElementById('cfgSyncInstr').style.display==='none'?'block':'none'" style="font-size:11px;color:#1565C0;cursor:pointer;margin-top:6px;text-decoration:underline">
+          📖 ¿Cómo configuro la sincronización?
+        </div>
+        <div id="cfgSyncInstr" style="display:none;background:#fff;border-radius:8px;padding:12px;margin-top:6px;font-size:12px;color:#374151;line-height:1.7;border:1px solid #dbeafe">
+          <b>Pasos para activar la sincronización:</b><br>
+          1. Haz clic en el link de plantilla que te envió RICCHARY por WhatsApp<br>
+          2. En Google Sheets: <b>Archivo → Hacer una copia</b> (guarda en tu Drive)<br>
+          3. Abre tu copia → <b>Extensiones → Apps Script</b><br>
+          4. Clic en <b>Implementar → Nueva implementación</b><br>
+          5. Tipo: <b>Aplicación web</b> · Acceso: <b>Cualquier persona</b> → Implementar<br>
+          6. Copia la URL que aparece y pégala aquí arriba<br>
+          7. Toca <b>Probar conexión</b> para verificar<br>
+          <span style="color:#b45309">⚠️ Debes tener una cuenta Google activa</span>
+        </div>
+      </div>
+
+      <!-- Subsección: Datil (opcional) -->
+      <div id="cfgDatilSection" style="border-top:1px solid #c7d2fe;padding-top:12px">
+        <div style="font-size:13px;font-weight:700;color:#1565C0;margin-bottom:4px">📄 Facturación electrónica SRI <span style="font-size:10px;font-weight:400;color:#64748b">(opcional)</span></div>
+        <div id="cfgDatilToggle" onclick="document.getElementById('cfgDatilContent').style.display=document.getElementById('cfgDatilContent').style.display==='none'?'block':'none'" style="font-size:11px;color:#1565C0;cursor:pointer;text-decoration:underline;margin-bottom:6px">
+          ⚡ Requiere cuenta Datil — ver instrucciones
+        </div>
+        <div id="cfgDatilContent" style="display:none;background:#fff;border-radius:8px;padding:12px;font-size:12px;color:#374151;line-height:1.7;border:1px solid #dbeafe">
+          <b>Requisitos para facturación electrónica:</b><br>
+          1. Tener RUC activo en el SRI (persona natural o empresa)<br>
+          2. Firma electrónica vigente (.p12 del Banco Central o Registro Civil)<br>
+          3. Crear una cuenta en <a href="https://app.datil.co" target="_blank" style="color:#1565C0">app.datil.co</a><br>
+          4. Cargar tu firma electrónica en Datil<br>
+          5. Copiar tu <b>API Key</b> de Datil<br><br>
+          <b>Configuración en el Apps Script:</b><br>
+          Al inicio del código verás el bloque <code style="background:#f1f5f9;padding:2px 4px;border-radius:3px">var DATIL = {...}</code><br>
+          Completa: <b>API_KEY</b>, <b>FIRMA_PASSWORD</b>, <b>RUC</b>, <b>RAZON_SOCIAL</b><br>
+          Cambia a <b>AMBIENTE: 2</b> cuando termines las pruebas<br><br>
+          <span style="color:#b45309">⚠️ Las claves se guardan en tu Apps Script privado, no en la app.</span><br>
+          <span style="color:#16a34a">✅ Datil envía la factura por correo al cliente automáticamente si incluyes su email.</span>
+        </div>
+      </div>
     </div>
+
     <button class="cfg-save" id="cfgSave">💾 Guardar configuración</button>
     <div id="cfgMsg" style="margin-top:8px;font-size:12px;color:#16a34a;text-align:center;display:none">✅ Guardado correctamente</div>
   </div>
@@ -1109,7 +1159,51 @@ function loadConfig(){
 }
 loadConfig();
 
-cfgBtn.onclick=()=>cfgModal.classList.add('open');
+// ── Estado PRO en Configuración ──────────────────────────────
+function actualizarEstadoPro(){
+  const url = (localStorage.getItem('cfg_sync_url')||'').trim();
+  const estado = document.getElementById('cfgProEstado');
+  const syncInput = document.getElementById('cfgSyncUrl');
+  if(!estado) return;
+  if(url){
+    estado.textContent = '✅ Pro activo';
+    estado.style.color = '#16a34a';
+    estado.style.fontWeight = '700';
+    if(syncInput) syncInput.value = url;
+  } else {
+    estado.textContent = '⭕ Sin configurar — modo local';
+    estado.style.color = '#64748b';
+    estado.style.fontWeight = '400';
+  }
+}
+
+// Probar conexión con el Apps Script
+document.getElementById('cfgTestSync').onclick = async function(){
+  const url = document.getElementById('cfgSyncUrl').value.trim();
+  const status = document.getElementById('cfgSyncStatus');
+  if(!url){
+    status.style.display='block'; status.style.color='#b91c1c';
+    status.textContent='⚠️ Primero pega tu URL de Apps Script arriba.'; return;
+  }
+  status.style.display='block'; status.style.color='#1565C0';
+  status.textContent='⏳ Probando conexión...';
+  try{
+    const r = await fetch(url+'?accion=list', {mode:'cors'});
+    const data = await r.json();
+    if(data.ok !== undefined || data.data){
+      status.style.color='#16a34a';
+      status.textContent='✅ Conexión exitosa — sincronización funcionando';
+    } else {
+      status.style.color='#b45309';
+      status.textContent='⚠️ Conectó pero respuesta inesperada. Verifica tu Apps Script.';
+    }
+  }catch(e){
+    status.style.color='#b91c1c';
+    status.textContent='❌ No se pudo conectar. Verifica que implementaste el script con acceso "Cualquier persona".';
+  }
+};
+
+cfgBtn.onclick=()=>{ actualizarEstadoPro(); cfgModal.classList.add('open'); };
 cfgClose.onclick=()=>cfgModal.classList.remove('open');
 cfgModal.onclick=e=>{if(e.target===cfgModal)cfgModal.classList.remove('open')};
 
