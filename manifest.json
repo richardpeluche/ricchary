@@ -13,6 +13,9 @@
   "dir": "ltr",
   "categories": ["business", "productivity"],
   "prefer_related_applications": false,
+  "related_applications": [],
+  "iarc_rating_id": "",
+  "display_override": ["standalone", "minimal-ui"],
   "icons": [
     {
       "src": "icon-192.png",
@@ -45,6 +48,13 @@
       "sizes": "512x512",
       "type": "image/png",
       "form_factor": "narrow",
+      "label": "RICCHARY Sistema de Cotizaciones"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "wide",
       "label": "RICCHARY Sistema de Cotizaciones"
     }
   ]
