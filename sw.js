@@ -1,7 +1,5 @@
-const CACHE = 'ricchary-v1';
+const CACHE = 'ricchary-v3';
 const ASSETS = [
-  '/ricchary/',
-  '/ricchary/index.html',
   '/ricchary/manifest.json',
   '/ricchary/icon-192.png',
   '/ricchary/icon-512.png',
@@ -24,7 +22,21 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
-  e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request))
-  );
+
+  const url = new URL(e.request.url);
+  const esHTML = e.request.mode === 'navigate' ||
+                 url.pathname.endsWith('/') ||
+                 url.pathname.endsWith('index.html');
+
+  if (esHTML) {
+    // RED PRIMERO para el HTML: siempre trae la versión más reciente
+    e.respondWith(
+      fetch(e.request).catch(() => caches.match('/ricchary/index.html'))
+    );
+  } else {
+    // Caché primero para imágenes y assets estáticos
+    e.respondWith(
+      caches.match(e.request).then(cached => cached || fetch(e.request))
+    );
+  }
 });
