@@ -93,24 +93,29 @@ jobs:
       - name: Initialize Bubblewrap project
         run: |
           cd twa-app
-          echo "y" | bubblewrap init \
+          (printf 'y\n'; yes '') | bubblewrap init \
             --manifest https://richardpeluche.github.io/ricchary/manifest.json \
             --skipPwaValidation
 
       - name: Build APK
         run: |
           cd twa-app
-          echo "${KEYSTORE_PASSWORD:-android123}" | bubblewrap build --skipPwaValidation
+          chmod +x gradlew
+          ./gradlew assembleRelease \
+            -Pandroid.injected.signing.store.file="$(pwd)/../android.keystore" \
+            -Pandroid.injected.signing.store.password="${KEYSTORE_PASSWORD:-android123}" \
+            -Pandroid.injected.signing.key.alias="${KEY_ALIAS:-ricchary}" \
+            -Pandroid.injected.signing.key.password="${KEY_PASSWORD:-android123}"
         env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: RICCHARY-APK-v${{ github.run_number }}
-          path: |
-            twa-app/app/build/outputs/apk/**/*.apk
-            twa-app/app/build/outputs/bundle/**/*.aab
+          path: twa-app/app/build/outputs/apk/release/*.apk
           retention-days: 30
 
       - name: Create Release
@@ -119,6 +124,6 @@ jobs:
         with:
           tag_name: v1.0.${{ github.run_number }}
           name: RICCHARY v1.0.${{ github.run_number }}
-          files: twa-app/app/build/outputs/apk/**/*.apk
+          files: twa-app/app/build/outputs/apk/release/*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
