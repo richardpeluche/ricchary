@@ -1,0 +1,124 @@
+name: Build RICCHARY APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Bubblewrap
+        run: npm install -g @bubblewrap/cli@latest
+
+      - name: Prepare keystore
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > android.keystore
+          else
+            keytool -genkey -v -keystore android.keystore \
+              -alias ricchary -keyalg RSA -keysize 2048 -validity 10000 \
+              -dname "CN=RICCHARY,OU=Dev,O=Ricchary,L=EC,C=EC" \
+              -storepass "${KEYSTORE_PASSWORD:-android123}" \
+              -keypass "${KEY_PASSWORD:-android123}" -noprompt
+          fi
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+
+      - name: Create TWA project config
+        run: |
+          mkdir -p twa-app
+          cat > twa-app/twa-manifest.json << 'TWAEOF'
+          {
+            "packageId": "com.ricchary.cotizaciones",
+            "host": "richardpeluche.github.io",
+            "name": "RICCHARY - Sistema de Cotizaciones",
+            "launcherName": "RICCHARY",
+            "display": "standalone",
+            "orientation": "portrait",
+            "themeColor": "#1565C0",
+            "navigationColor": "#1565C0",
+            "navigationColorDark": "#1565C0",
+            "navigationDividerColor": "#1565C0",
+            "navigationDividerColorDark": "#1565C0",
+            "backgroundColor": "#1565C0",
+            "enableNotifications": false,
+            "startUrl": "/ricchary/index.html",
+            "iconUrl": "https://richardpeluche.github.io/ricchary/icon-512.png",
+            "maskableIconUrl": "https://richardpeluche.github.io/ricchary/icon-512.png",
+            "monochromeIconUrl": "https://richardpeluche.github.io/ricchary/icon-512.png",
+            "shortcuts": [],
+            "generatorApp": "bubblewrap-cli",
+            "webManifestUrl": "https://richardpeluche.github.io/ricchary/manifest.json",
+            "isChromeOSOnly": false,
+            "isMetaQuest": false,
+            "fullScopeUrl": "https://richardpeluche.github.io/ricchary/",
+            "minSdkVersion": 21,
+            "appVersionName": "1.0.0",
+            "appVersionCode": 1,
+            "signingKey": {
+              "path": "../android.keystore",
+              "alias": "ricchary"
+            },
+            "additionalTrustedOrigins": [],
+            "retainedBundles": [],
+            "fallbackType": "customtabs",
+            "features": {},
+            "alphaDependencies": { "enabled": false },
+            "enableSiteSettingsShortcut": true,
+            "isTrustedWebActivity": true,
+            "fingerprints": []
+          }
+          TWAEOF
+
+      - name: Initialize Bubblewrap project
+        run: |
+          cd twa-app
+          echo "y" | bubblewrap init \
+            --manifest https://richardpeluche.github.io/ricchary/manifest.json \
+            --skipPwaValidation
+
+      - name: Build APK
+        run: |
+          cd twa-app
+          echo "${KEYSTORE_PASSWORD:-android123}" | bubblewrap build --skipPwaValidation
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: RICCHARY-APK-v${{ github.run_number }}
+          path: |
+            twa-app/app/build/outputs/apk/**/*.apk
+            twa-app/app/build/outputs/bundle/**/*.aab
+          retention-days: 30
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        if: github.ref == 'refs/heads/main'
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: RICCHARY v1.0.${{ github.run_number }}
+          files: twa-app/app/build/outputs/apk/**/*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
