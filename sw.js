@@ -1,47 +1,30 @@
-// Service Worker — Proformas RICCHARY
-const CACHE_NAME = 'ricchary-v2';
+const CACHE = 'ricchary-v1';
 const ASSETS = [
-  './index.html',
-  './manifest.json',
-  './icon-192.png',
-  './icon-512.png'
+  '/ricchary/',
+  '/ricchary/index.html',
+  '/ricchary/manifest.json',
+  '/ricchary/icon-192.png',
+  '/ricchary/icon-512.png',
+  '/ricchary/logo-rh.png'
 ];
 
-// Instalación: guarda los archivos en caché
-self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(ASSETS);
-    })
-  );
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
   self.skipWaiting();
 });
 
-// Activación: limpia cachés viejas
-self.addEventListener('activate', event => {
-  event.waitUntil(
+self.addEventListener('activate', e => {
+  e.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
     )
   );
   self.clients.claim();
 });
 
-// Fetch: red primero para el HTML (siempre actualizado), caché para el resto
-self.addEventListener('fetch', event => {
-  if (event.request.mode === 'navigate') {
-    event.respondWith(
-      fetch(event.request)
-        .then(res => {
-          const copy = res.clone();
-          caches.open(CACHE_NAME).then(c => c.put('./index.html', copy));
-          return res;
-        })
-        .catch(() => caches.match('./index.html'))
-    );
-    return;
-  }
-  event.respondWith(
-    caches.match(event.request).then(cached => cached || fetch(event.request))
+self.addEventListener('fetch', e => {
+  if (e.request.method !== 'GET') return;
+  e.respondWith(
+    caches.match(e.request).then(cached => cached || fetch(e.request))
   );
 });
