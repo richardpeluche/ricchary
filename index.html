@@ -1298,6 +1298,10 @@ function activarCodigo(){
   // Activar Pro
   localStorage.setItem(PRO_KEY, '1');
   localStorage.setItem(PRO_EXP, String(exp));
+  // Si es el código del dueño, marcar este dispositivo para que conserve su URL
+  if((input.value||'').toUpperCase().trim() === 'RICCHARY-OWNER'){
+    localStorage.setItem('ricchary_es_dueno', '1');
+  }
   input.classList.add('ok');
   msg.className = 'pro-msg ok';
   msg.textContent = '✅ ¡Versión Pro activada! Redirigiendo...';
@@ -1785,6 +1789,19 @@ document.getElementById('printBtn').onclick=()=>{ guardarCotizacion(); window.pr
 })();
 
 // ===== SINCRONIZACIÓN GOOGLE SHEETS (RICCHARY) =====
+// ===== LIMPIEZA DE SEGURIDAD (distribución) =====
+// Si un dispositivo tiene guardada la URL del dueño original (de versiones
+// anteriores con URL hardcodeada), se elimina para que NO comparta ese historial.
+// El dueño la reconfigura una vez junto con el código RICCHARY-OWNER.
+(function(){
+  const URL_DUENO = 'AKfycbwaE92HwILHtCz1_feWtU3466jNS-Oy-jVEHyoOkepwIVijln2s--q3F3TjeWOWKbqs';
+  const guardada = localStorage.getItem('cfg_sync_url')||'';
+  // Solo limpiar si tiene la URL del dueño Y no es un dispositivo marcado como dueño
+  if(guardada.indexOf(URL_DUENO) >= 0 && localStorage.getItem('ricchary_es_dueno') !== '1'){
+    localStorage.removeItem('cfg_sync_url');
+  }
+})();
+
 let SYNC_URL = (localStorage.getItem('cfg_sync_url')||'').trim();  // VACIO por defecto: cada usuario configura su propia URL
 let SYNC_ON = !!SYNC_URL;
 
