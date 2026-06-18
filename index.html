@@ -1785,7 +1785,7 @@ document.getElementById('printBtn').onclick=()=>{ guardarCotizacion(); window.pr
 })();
 
 // ===== SINCRONIZACIÓN GOOGLE SHEETS (RICCHARY) =====
-let SYNC_URL = (localStorage.getItem('cfg_sync_url')||'https://script.google.com/macros/s/AKfycbwaE92HwILHtCz1_feWtU3466jNS-Oy-jVEHyoOkepwIVijln2s--q3F3TjeWOWKbqs/exec').trim();
+let SYNC_URL = (localStorage.getItem('cfg_sync_url')||'').trim();  // VACIO por defecto: cada usuario configura su propia URL
 let SYNC_ON = !!SYNC_URL;
 
 // Indicador visual de estado de sincronización
