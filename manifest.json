@@ -1,31 +1,28 @@
 {
-  "id": "/ricchary/",
+  "id": "https://richardpeluche.github.io/ricchary/",
   "name": "RICCHARY - Sistema de Cotizaciones",
   "short_name": "RICCHARY",
-  "description": "Cotiza, factura y gestiona tus pedidos desde cualquier dispositivo. Sincronización en la nube, facturación electrónica SRI y envío por WhatsApp.",
-  "start_url": "/ricchary/index.html",
-  "scope": "/ricchary/",
+  "description": "Cotiza, factura y gestiona tus pedidos desde cualquier dispositivo.",
+  "start_url": "https://richardpeluche.github.io/ricchary/index.html",
+  "scope": "https://richardpeluche.github.io/ricchary/",
   "display": "standalone",
   "background_color": "#1565C0",
   "theme_color": "#1565C0",
-  "orientation": "portrait-primary",
+  "orientation": "portrait",
   "lang": "es",
   "dir": "ltr",
   "categories": ["business", "productivity"],
   "prefer_related_applications": false,
-  "related_applications": [],
-  "iarc_rating_id": "",
-  "display_override": ["standalone", "minimal-ui"],
   "icons": [
     {
       "src": "icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "maskable"
+      "purpose": "any"
     },
     {
-      "src": "icon-192.png",
-      "sizes": "192x192",
+      "src": "icon-512.png",
+      "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
@@ -34,12 +31,6 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
-    },
-    {
-      "src": "icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
     }
   ],
   "screenshots": [
@@ -47,15 +38,7 @@
       "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "form_factor": "narrow",
-      "label": "RICCHARY Sistema de Cotizaciones"
-    },
-    {
-      "src": "icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "RICCHARY Sistema de Cotizaciones"
+      "form_factor": "narrow"
     }
   ]
 }
