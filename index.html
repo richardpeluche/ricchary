@@ -912,8 +912,10 @@ document.querySelectorAll('.color-btn').forEach(btn=>{
 function getHistory(){
   try{
     const raw = JSON.parse(localStorage.getItem('cot_history')||'[]');
-    const hace15dias = Date.now() - 15*24*60*60*1000;
-    const filtrado = raw.filter(c => c.id > hace15dias);
+    // Retención local: Pro = 15 días, Free = 10 días
+    const dias = (localStorage.getItem('ricchary_pro_activado')==='1') ? 15 : 10;
+    const limite = Date.now() - dias*24*60*60*1000;
+    const filtrado = raw.filter(c => c.id > limite);
     // Si se eliminaron elementos, actualizar el storage
     if(filtrado.length !== raw.length) saveHistory(filtrado);
     return filtrado;
@@ -1035,7 +1037,9 @@ function guardarCotizacion(){
   // Evitar duplicado por id igual (edición)
   hist = hist.filter(c=>c.id!==cot.id && String(c.num)!==String(cot.num));
   hist.unshift(cot);
-  if(hist.length>10) hist=hist.slice(0,10);
+  // Límite de cotizaciones locales: Pro = 30, Free = 10
+  const LIMITE_LOCAL = esPro() ? 30 : 10;
+  if(hist.length>LIMITE_LOCAL) hist=hist.slice(0,LIMITE_LOCAL);
   saveHistory(hist);
   showHistSaveBadge();
   syncGuardar(cot);
