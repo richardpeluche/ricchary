@@ -677,6 +677,7 @@ Este documento es de carácter contrato cliente-ofertador, que firmado constituy
 
     <div class="cfg-group">
       <button type="button" onclick="verOnboarding()" style="width:100%;background:#eef2ff;color:#1565C0;border:1px solid #c7d2fe;padding:10px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">📖 Ver tutorial / Qué hace la app</button>
+      <button type="button" onclick="window.open('https://richardpeluche.github.io/ricchary/RICCHARY_Manual_Usuario.pdf','_blank')" style="width:100%;background:#fdf9ef;color:#8a6d1f;border:1px solid #e6d9b0;padding:10px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-top:8px">📄 Manual de usuario (PDF)</button>
     </div>
     <div class="cfg-group">
       <label>🔗 Link de contacto (WhatsApp)</label>
@@ -693,50 +694,36 @@ Este documento es de carácter contrato cliente-ofertador, que firmado constituy
         <button type="button" id="btnDesbloquearPro" onclick="abrirModalPro()" style="background:linear-gradient(135deg,#C9A84C,#e0c46a);color:#1A1A2E;border:none;padding:7px 14px;border-radius:20px;font-size:12px;font-weight:800;cursor:pointer;display:none">🔓 Activar versión Pro</button>
       </div>
 
-      <!-- Subsección: Sincronización -->
+      <!-- Sincronización + Facturación unificada -->
       <div style="margin-bottom:12px">
-        <div style="font-size:13px;font-weight:700;color:#1565C0;margin-bottom:6px">☁️ Sincronización en la nube</div>
+        <div style="font-size:13px;font-weight:700;color:#1565C0;margin-bottom:6px">☁️ Sincronización en la nube + 🧾 Facturación electrónica</div>
         <input type="text" id="cfgSyncUrl" placeholder="https://script.google.com/macros/s/.../exec" style="font-size:12px">
         <div style="display:flex;gap:8px;margin-top:6px">
           <button type="button" id="cfgTestSync" style="flex:1;background:#1565C0;color:#fff;border:none;padding:8px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">🔗 Probar conexión</button>
         </div>
         <div id="cfgSyncStatus" style="font-size:11px;margin-top:5px;display:none"></div>
-        <!-- Instrucciones colapsables -->
-        <div id="cfgSyncInstrToggle" onclick="document.getElementById('cfgSyncInstr').style.display=document.getElementById('cfgSyncInstr').style.display==='none'?'block':'none'" style="font-size:11px;color:#1565C0;cursor:pointer;margin-top:6px;text-decoration:underline">
-          📖 ¿Cómo configuro la sincronización?
+        <!-- Instrucciones colapsables UNIFICADAS -->
+        <div id="cfgSyncInstrToggle" onclick="document.getElementById('cfgSyncInstr').style.display=document.getElementById('cfgSyncInstr').style.display==='none'?'block':'none'" style="font-size:12px;color:#1565C0;cursor:pointer;margin-top:8px;text-decoration:underline;font-weight:600">
+          📖 ¿Cómo configuro mi cuenta? (guía paso a paso)
         </div>
-        <div id="cfgSyncInstr" style="display:none;background:#fff;border-radius:8px;padding:12px;margin-top:6px;font-size:12px;color:#374151;line-height:1.7;border:1px solid #dbeafe">
-          <b>Pasos para activar la sincronización:</b><br>
-          1. Abre la plantilla oficial: <a href="https://docs.google.com/spreadsheets/d/1nKjODxGBnQlQ_cHIIfyR5hZNqwF3QzhcVFpk7uPWbmI/copy" target="_blank" style="color:#1565C0;font-weight:700">👉 Clic aquí para copiar la plantilla</a><br>
-          2. En Google Sheets: <b>Hacer una copia</b> → se guarda en tu Drive<br>
-          3. Abre tu copia → <b>Extensiones → Apps Script</b><br>
-          4. Clic en <b>Implementar → Nueva implementación</b><br>
-          5. Tipo: <b>Aplicación web</b> · Acceso: <b>Cualquier persona</b> → Implementar<br>
-          6. Copia la URL que aparece y pégala aquí arriba<br>
-          7. Toca <b>Probar conexión</b> para verificar<br>
-          <span style="color:#b45309">⚠️ Debes tener una cuenta Google activa</span>
-        </div>
-      </div>
-
-      <!-- Subsección: Datil (opcional) -->
-      <div id="cfgDatilSection" style="border-top:1px solid #c7d2fe;padding-top:12px">
-        <div style="font-size:13px;font-weight:700;color:#1565C0;margin-bottom:4px">📄 Facturación electrónica SRI <span style="font-size:10px;font-weight:400;color:#64748b">(opcional)</span></div>
-        <div id="cfgDatilToggle" onclick="document.getElementById('cfgDatilContent').style.display=document.getElementById('cfgDatilContent').style.display==='none'?'block':'none'" style="font-size:11px;color:#1565C0;cursor:pointer;text-decoration:underline;margin-bottom:6px">
-          ⚡ Requiere cuenta Datil — ver instrucciones
-        </div>
-        <div id="cfgDatilContent" style="display:none;background:#fff;border-radius:8px;padding:12px;font-size:12px;color:#374151;line-height:1.7;border:1px solid #dbeafe">
-          <b>Requisitos para facturación electrónica:</b><br>
-          1. Tener RUC activo en el SRI (persona natural o empresa)<br>
-          2. Firma electrónica vigente (.p12 del Banco Central o Registro Civil)<br>
-          3. Crear una cuenta en <a href="https://app.datil.co" target="_blank" style="color:#1565C0">app.datil.co</a><br>
-          4. Cargar tu firma electrónica en Datil<br>
-          5. Copiar tu <b>API Key</b> de Datil<br><br>
-          <b>Configuración en el Apps Script:</b><br>
-          Al inicio del código verás el bloque <code style="background:#f1f5f9;padding:2px 4px;border-radius:3px">var DATIL = {...}</code><br>
-          Completa: <b>API_KEY</b>, <b>FIRMA_PASSWORD</b>, <b>RUC</b>, <b>RAZON_SOCIAL</b><br>
-          Cambia a <b>AMBIENTE: 2</b> cuando termines las pruebas<br><br>
-          <span style="color:#b45309">⚠️ Las claves se guardan en tu Apps Script privado, no en la app.</span><br>
-          <span style="color:#16a34a">✅ Datil envía la factura por correo al cliente automáticamente si incluyes su email.</span>
+        <div id="cfgSyncInstr" style="display:none;background:#fff;border-radius:8px;padding:14px;margin-top:8px;font-size:12px;color:#374151;line-height:1.8;border:1px solid #dbeafe">
+          <b style="color:#1565C0">Configura tu sincronización y facturación en un solo paso:</b><br><br>
+          <b>1.</b> Abre la plantilla oficial: <a href="https://docs.google.com/spreadsheets/d/1nKjODxGBnQlQ_cHIIfyR5hZNqwF3QzhcVFpk7uPWbmI/copy" target="_blank" style="color:#1565C0;font-weight:700">👉 Clic aquí para copiar la plantilla</a><br>
+          <b>2.</b> En Google Sheets: <b>Hacer una copia</b> → se guarda en tu Drive<br>
+          <b>3.</b> Abre tu copia → <b>Extensiones → Apps Script</b><br>
+          <b>4.</b> <span style="background:#fef9e7;padding:2px 4px;border-radius:3px"><b>(Opcional — solo si vas a facturar)</b></span> En el código, busca el bloque <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px">var DATIL</code> y completa con tus datos: <b>API Key de Datil, clave de tu firma electrónica, RUC y razón social</b>.<br>
+          <span style="color:#64748b;font-size:11px">Si NO vas a facturar todavía, omite este paso y déjalo tal cual — la sincronización funciona igual.</span><br>
+          <b>5.</b> Clic en <b>Implementar → Nueva implementación</b><br>
+          <b>6.</b> Tipo: <b>Aplicación web</b> · Acceso: <b>Cualquier persona</b> → <b>Implementar</b><br>
+          <b>7.</b> Copia la URL que aparece y pégala aquí arriba → toca <b>Probar conexión</b><br><br>
+          <div style="background:#f0f7ff;border-radius:6px;padding:10px;font-size:11px;line-height:1.7">
+            <b style="color:#1565C0">📄 Sobre la facturación electrónica (SRI):</b><br>
+            • Requiere: <b>RUC activo</b>, <b>firma electrónica</b> (.p12) y cuenta en <a href="https://app.datil.co" target="_blank" style="color:#1565C0">app.datil.co</a><br>
+            • Tus claves se guardan en TU Apps Script privado, nunca en la app 🔒<br>
+            • Datil envía la factura al correo del cliente automáticamente ✅<br>
+            • Cambia <code style="background:#fff;padding:1px 3px;border-radius:3px">AMBIENTE: 2</code> en el código cuando termines de probar
+          </div>
+          <br><span style="color:#b45309;font-size:11px">⚠️ Necesitas una cuenta Google activa para la sincronización.</span>
         </div>
       </div>
     </div>
@@ -1338,22 +1325,18 @@ function actualizarEstadoPro(){
     if(syncInput) syncInput.value = url;
     if(btnDesbloquear) btnDesbloquear.style.display = 'none';
     if(cfgProSection) cfgProSection.style.opacity = '1';
-    // Mostrar subsecciones sync y datil
+    // Mostrar instructivo unificado
     const syncDiv = document.querySelector('#cfgProSection [style*="margin-bottom:12px"]');
-    const datilDiv = document.getElementById('cfgDatilSection');
     if(syncDiv) syncDiv.style.display = 'block';
-    if(datilDiv) datilDiv.style.display = 'block';
   } else {
     // No activo — bloquear sección
     estado.textContent = '⭕ Sin activar';
     estado.style.color = '#94a3b8';
     estado.style.fontWeight = '400';
     if(btnDesbloquear) btnDesbloquear.style.display = 'inline-block';
-    // Ocultar subsecciones hasta activar
+    // Ocultar instructivo hasta activar
     const syncDiv = document.querySelector('#cfgProSection [style*="margin-bottom:12px"]');
-    const datilDiv = document.getElementById('cfgDatilSection');
     if(syncDiv) syncDiv.style.display = 'none';
-    if(datilDiv) datilDiv.style.display = 'none';
   }
 }
 
