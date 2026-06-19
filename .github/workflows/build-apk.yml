@@ -20,6 +20,11 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Install Android SDK components
+        run: |
+          yes | sdkmanager --licenses > /dev/null 2>&1 || true
+          sdkmanager "platforms;android-34" "build-tools;34.0.0"
+
       - name: Install Gradle 8.5
         run: |
           wget -q https://services.gradle.org/distributions/gradle-8.5-bin.zip -O /tmp/gradle.zip
@@ -50,12 +55,13 @@ jobs:
       - name: Build APK
         run: |
           cd android
-          gradle assembleRelease
+          gradle assembleRelease --no-daemon \
+            -Pandroid.injected.signing.store.file="${GITHUB_WORKSPACE}/android.keystore" \
+            -Pandroid.injected.signing.store.password="android123" \
+            -Pandroid.injected.signing.key.alias="ricchary" \
+            -Pandroid.injected.signing.key.password="android123"
         env:
-          KEYSTORE_PATH: ${{ github.workspace }}/android.keystore
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD || 'android123' }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS || 'ricchary' }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD || 'android123' }}
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
