@@ -1409,6 +1409,11 @@ cfgSave.onclick=()=>{
   localStorage.setItem('cfg_link',lk2);
   const su=document.getElementById('cfgSyncUrl')?.value.trim()||'';
   localStorage.setItem('cfg_sync_url',su);
+  // Si el usuario guarda la URL del dueño, marcar este dispositivo como dueño
+  // (evita que la limpieza de seguridad la borre al recargar)
+  if(su.indexOf('AKfycbwaE92HwILHtCz1_feWtU3466jNS-Oy-jVEHyoOkepwIVijln2s--q3F3TjeWOWKbqs') >= 0){
+    localStorage.setItem('ricchary_es_dueno', '1');
+  }
   if(su){SYNC_URL=su;SYNC_ON=true;syncStatus('☁️ Sincronización activada','#22c55e');syncNextOrden().then(n=>{if(n)setOrdenActual(n);});syncListar();}
   else{SYNC_ON=false;syncStatus('📴 Modo local','#64748b');}
 
