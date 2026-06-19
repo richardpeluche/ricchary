@@ -52,6 +52,9 @@ jobs:
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
 
+      - name: Configure SDK path
+        run: echo "sdk.dir=$ANDROID_HOME" > android/local.properties
+
       - name: Build APK
         run: |
           cd android
@@ -60,8 +63,6 @@ jobs:
             -Pandroid.injected.signing.store.password="android123" \
             -Pandroid.injected.signing.key.alias="ricchary" \
             -Pandroid.injected.signing.key.password="android123"
-        env:
-          ANDROID_HOME: ${{ env.ANDROID_HOME }}
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
