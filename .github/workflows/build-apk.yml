@@ -53,16 +53,30 @@ jobs:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
 
       - name: Configure SDK path
-        run: echo "sdk.dir=$ANDROID_HOME" > android/local.properties
+        run: |
+          SDK="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          echo "sdk.dir=$SDK" > android/local.properties
+          echo "SDK path configured: $SDK"
+          cat android/local.properties
 
       - name: Build APK
         run: |
           cd android
-          gradle assembleRelease --no-daemon \
+          gradle assembleRelease --no-daemon --stacktrace \
             -Pandroid.injected.signing.store.file="${GITHUB_WORKSPACE}/android.keystore" \
             -Pandroid.injected.signing.store.password="android123" \
             -Pandroid.injected.signing.key.alias="ricchary" \
-            -Pandroid.injected.signing.key.password="android123"
+            -Pandroid.injected.signing.key.password="android123" \
+            2>&1 | tee /tmp/build-output.txt
+          exit ${PIPESTATUS[0]}
+
+      - name: Upload build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log-v${{ github.run_number }}
+          path: /tmp/build-output.txt
+          retention-days: 7
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
