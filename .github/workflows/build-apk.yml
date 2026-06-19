@@ -50,23 +50,7 @@ jobs:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
 
       - name: Configure SDK path
-        run: |
-          echo "sdk.dir=$ANDROID_HOME" > android/local.properties
-          echo "Configured sdk.dir=$ANDROID_HOME"
-
-      - name: Pre-populate Gradle wrapper cache
-        run: |
-          GRADLE_DISTS="$HOME/.gradle/wrapper/dists/gradle-7.6.3-bin"
-          mkdir -p "$GRADLE_DISTS"
-          HASH_DIR=$(ls "$GRADLE_DISTS" 2>/dev/null | head -1)
-          if [ -z "$HASH_DIR" ]; then
-            HASH_DIR="$(echo -n 'https://services.gradle.org/distributions/gradle-7.6.3-bin.zip' | md5sum | cut -c1-8)"
-            mkdir -p "$GRADLE_DISTS/$HASH_DIR"
-          fi
-          cp /tmp/gradle.zip "$GRADLE_DISTS/$HASH_DIR/gradle-7.6.3-bin.zip"
-          cd "$GRADLE_DISTS/$HASH_DIR"
-          unzip -q gradle-7.6.3-bin.zip
-          touch gradle-7.6.3-bin.zip.ok
+        run: echo "sdk.dir=$ANDROID_HOME" > android/local.properties
 
       - name: Generate Gradle wrapper
         run: |
@@ -74,39 +58,20 @@ jobs:
           gradle wrapper --gradle-version 7.6.3
           chmod +x gradlew
 
-      - name: Diagnose build environment
-        run: |
-          echo "=== Gradle version ==="
-          gradle --version
-          echo "=== ANDROID_HOME ==="
-          echo $ANDROID_HOME
-          echo "=== local.properties ==="
-          cat android/local.properties
-          echo "=== Project structure ==="
-          ls android/
-          ls android/app/src/main/
-          ls android/app/src/main/res/
-
-      - name: Build APK (debug - no signing needed)
+      - name: Build APK
         run: |
           cd android
-          ./gradlew assembleDebug --no-daemon --info \
-            2>&1 | tee /tmp/build-output.txt
-          exit ${PIPESTATUS[0]}
-
-      - name: Upload build log on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-log-v${{ github.run_number }}
-          path: /tmp/build-output.txt
-          retention-days: 7
+          ./gradlew assembleRelease --no-daemon \
+            -Pandroid.injected.signing.store.file="${GITHUB_WORKSPACE}/android.keystore" \
+            -Pandroid.injected.signing.store.password="android123" \
+            -Pandroid.injected.signing.key.alias="ricchary" \
+            -Pandroid.injected.signing.key.password="android123"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: RICCHARY-APK-v${{ github.run_number }}
-          path: android/app/build/outputs/apk/debug/*.apk
+          path: android/app/build/outputs/apk/release/*.apk
           retention-days: 30
 
       - name: Create Release
@@ -115,6 +80,6 @@ jobs:
         with:
           tag_name: v1.0.${{ github.run_number }}
           name: RICCHARY v1.0.${{ github.run_number }}
-          files: android/app/build/outputs/apk/debug/*.apk
+          files: android/app/build/outputs/apk/release/*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
