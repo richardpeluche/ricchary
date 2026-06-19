@@ -20,13 +20,22 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
+      - name: Install Gradle 8.5
+        run: |
+          wget -q https://services.gradle.org/distributions/gradle-8.5-bin.zip -O /tmp/gradle.zip
+          unzip -q /tmp/gradle.zip -d /opt/gradle
+          echo "/opt/gradle/gradle-8.5/bin" >> $GITHUB_PATH
 
-      - name: Install Bubblewrap
-        run: npm install -g @bubblewrap/cli@latest
+      - name: Download and resize app icons
+        run: |
+          curl -sL https://richardpeluche.github.io/ricchary/icon-512.png -o /tmp/icon.png
+          declare -A sizes=([mdpi]=48 [hdpi]=72 [xhdpi]=96 [xxhdpi]=144 [xxxhdpi]=192)
+          for density in "${!sizes[@]}"; do
+            size="${sizes[$density]}"
+            mkdir -p android/app/src/main/res/mipmap-$density
+            convert /tmp/icon.png -resize ${size}x${size} \
+              android/app/src/main/res/mipmap-$density/ic_launcher.png
+          done
 
       - name: Prepare keystore
         run: |
@@ -36,86 +45,26 @@ jobs:
             keytool -genkey -v -keystore android.keystore \
               -alias ricchary -keyalg RSA -keysize 2048 -validity 10000 \
               -dname "CN=RICCHARY,OU=Dev,O=Ricchary,L=EC,C=EC" \
-              -storepass "${KEYSTORE_PASSWORD:-android123}" \
-              -keypass "${KEY_PASSWORD:-android123}" -noprompt
+              -storepass "android123" -keypass "android123" -noprompt
           fi
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-
-      - name: Create TWA project config
-        run: |
-          mkdir -p twa-app
-          cat > twa-app/twa-manifest.json << 'TWAEOF'
-          {
-            "packageId": "com.ricchary.cotizaciones",
-            "host": "richardpeluche.github.io",
-            "name": "RICCHARY - Sistema de Cotizaciones",
-            "launcherName": "RICCHARY",
-            "display": "standalone",
-            "orientation": "portrait",
-            "themeColor": "#1565C0",
-            "navigationColor": "#1565C0",
-            "navigationColorDark": "#1565C0",
-            "navigationDividerColor": "#1565C0",
-            "navigationDividerColorDark": "#1565C0",
-            "backgroundColor": "#1565C0",
-            "enableNotifications": false,
-            "startUrl": "/ricchary/index.html",
-            "iconUrl": "https://richardpeluche.github.io/ricchary/icon-512.png",
-            "maskableIconUrl": "https://richardpeluche.github.io/ricchary/icon-512.png",
-            "monochromeIconUrl": "https://richardpeluche.github.io/ricchary/icon-512.png",
-            "shortcuts": [],
-            "generatorApp": "bubblewrap-cli",
-            "webManifestUrl": "https://richardpeluche.github.io/ricchary/manifest.json",
-            "isChromeOSOnly": false,
-            "isMetaQuest": false,
-            "fullScopeUrl": "https://richardpeluche.github.io/ricchary/",
-            "minSdkVersion": 21,
-            "appVersionName": "1.0.0",
-            "appVersionCode": 1,
-            "signingKey": {
-              "path": "../android.keystore",
-              "alias": "ricchary"
-            },
-            "additionalTrustedOrigins": [],
-            "retainedBundles": [],
-            "fallbackType": "customtabs",
-            "features": {},
-            "alphaDependencies": { "enabled": false },
-            "enableSiteSettingsShortcut": true,
-            "isTrustedWebActivity": true,
-            "fingerprints": []
-          }
-          TWAEOF
-
-      - name: Initialize Bubblewrap project
-        run: |
-          cd twa-app
-          (printf 'y\n'; yes '') | bubblewrap init \
-            --manifest https://richardpeluche.github.io/ricchary/manifest.json \
-            --skipPwaValidation
 
       - name: Build APK
         run: |
-          cd twa-app
-          chmod +x gradlew
-          ./gradlew assembleRelease \
-            -Pandroid.injected.signing.store.file="$(pwd)/../android.keystore" \
-            -Pandroid.injected.signing.store.password="${KEYSTORE_PASSWORD:-android123}" \
-            -Pandroid.injected.signing.key.alias="${KEY_ALIAS:-ricchary}" \
-            -Pandroid.injected.signing.key.password="${KEY_PASSWORD:-android123}"
+          cd android
+          gradle assembleRelease
         env:
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEYSTORE_PATH: ${{ github.workspace }}/android.keystore
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD || 'android123' }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS || 'ricchary' }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD || 'android123' }}
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: RICCHARY-APK-v${{ github.run_number }}
-          path: twa-app/app/build/outputs/apk/release/*.apk
+          path: android/app/build/outputs/apk/release/*.apk
           retention-days: 30
 
       - name: Create Release
@@ -124,6 +73,6 @@ jobs:
         with:
           tag_name: v1.0.${{ github.run_number }}
           name: RICCHARY v1.0.${{ github.run_number }}
-          files: twa-app/app/build/outputs/apk/release/*.apk
+          files: android/app/build/outputs/apk/release/*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
