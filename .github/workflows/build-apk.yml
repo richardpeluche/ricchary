@@ -27,13 +27,14 @@ jobs:
           echo "/opt/gradle/gradle-8.5/bin" >> $GITHUB_PATH
 
       - name: Download and resize app icons
+        shell: bash
         run: |
           curl -sL https://richardpeluche.github.io/ricchary/icon-512.png -o /tmp/icon.png
-          declare -A sizes=([mdpi]=48 [hdpi]=72 [xhdpi]=96 [xxhdpi]=144 [xxxhdpi]=192)
-          for density in "${!sizes[@]}"; do
-            size="${sizes[$density]}"
+          for density_size in "mdpi:48" "hdpi:72" "xhdpi:96" "xxhdpi:144" "xxxhdpi:192"; do
+            density="${density_size%%:*}"
+            size="${density_size##*:}"
             mkdir -p android/app/src/main/res/mipmap-$density
-            convert /tmp/icon.png -resize ${size}x${size} \
+            convert /tmp/icon.png -resize "${size}x${size}" \
               android/app/src/main/res/mipmap-$density/ic_launcher.png
           done
 
