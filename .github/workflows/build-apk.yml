@@ -1,4 +1,4 @@
-name: Build RICCHARY APK
+name: Build RICCHARY APK + AAB
 
 on:
   push:
@@ -10,6 +10,11 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    env:
+      KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASSWORD || 'android123' }}
+      KEY_ALIAS_VAL: ${{ secrets.KEY_ALIAS || 'ricchary' }}
+      KEY_PASS: ${{ secrets.KEY_PASSWORD || 'android123' }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -41,12 +46,14 @@ jobs:
       - name: Prepare keystore
         run: |
           if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "Usando keystore persistente desde secret"
             echo "$KEYSTORE_BASE64" | base64 -d > android.keystore
           else
+            echo "ADVERTENCIA: Sin KEYSTORE_BASE64 - generando keystore temporal"
             keytool -genkey -v -keystore android.keystore \
-              -alias ricchary -keyalg RSA -keysize 2048 -validity 10000 \
+              -alias "$KEY_ALIAS_VAL" -keyalg RSA -keysize 2048 -validity 10000 \
               -dname "CN=RICCHARY,OU=Dev,O=Ricchary,L=EC,C=EC" \
-              -storepass "android123" -keypass "android123" -noprompt
+              -storepass "$KEYSTORE_PASS" -keypass "$KEY_PASS" -noprompt
           fi
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
@@ -60,14 +67,23 @@ jobs:
           gradle wrapper --gradle-version 7.6.3
           chmod +x gradlew
 
-      - name: Build APK
+      - name: Build APK (para pruebas directas)
         run: |
           cd android
           ./gradlew assembleRelease --no-daemon \
             -Pandroid.injected.signing.store.file="${GITHUB_WORKSPACE}/android.keystore" \
-            -Pandroid.injected.signing.store.password="android123" \
-            -Pandroid.injected.signing.key.alias="ricchary" \
-            -Pandroid.injected.signing.key.password="android123"
+            -Pandroid.injected.signing.store.password="$KEYSTORE_PASS" \
+            -Pandroid.injected.signing.key.alias="$KEY_ALIAS_VAL" \
+            -Pandroid.injected.signing.key.password="$KEY_PASS"
+
+      - name: Build AAB (para Play Store)
+        run: |
+          cd android
+          ./gradlew bundleRelease --no-daemon \
+            -Pandroid.injected.signing.store.file="${GITHUB_WORKSPACE}/android.keystore" \
+            -Pandroid.injected.signing.store.password="$KEYSTORE_PASS" \
+            -Pandroid.injected.signing.key.alias="$KEY_ALIAS_VAL" \
+            -Pandroid.injected.signing.key.password="$KEY_PASS"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
@@ -76,12 +92,25 @@ jobs:
           path: android/app/build/outputs/apk/release/*.apk
           retention-days: 30
 
+      - name: Upload AAB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: RICCHARY-AAB-v${{ github.run_number }}
+          path: android/app/build/outputs/bundle/release/*.aab
+          retention-days: 30
+
       - name: Create Release
         uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main'
         with:
           tag_name: v1.0.${{ github.run_number }}
           name: RICCHARY v1.0.${{ github.run_number }}
-          files: android/app/build/outputs/apk/release/*.apk
+          body: |
+            ## RICCHARY v1.0.${{ github.run_number }}
+            - **APK**: instalacion directa en Android
+            - **AAB**: subida a Google Play Store
+          files: |
+            android/app/build/outputs/apk/release/*.apk
+            android/app/build/outputs/bundle/release/*.aab
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
