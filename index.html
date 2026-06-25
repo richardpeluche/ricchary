@@ -1115,11 +1115,36 @@ function agendarDesdeCot(cot){
 // Renderiza el listado del historial
 function renderHistorial(){
   const local=getHistory();
-  // Fusionar: locales primero; de la nube solo las que no estén en local (por nº de orden)
-  const nums = new Set(local.map(c=>String(c.num)));
-  const nube = CLOUD_HIST.filter(c=>!nums.has(String(c.num)));
-  // Ordenar todo por número de orden descendente (más reciente primero)
-  const hist = local.concat(nube).sort((a,b)=>parseInt(b.num,10)-parseInt(a.num,10));
+  // Fusionar local + nube. Si una cotización está en ambos (mismo nº),
+  // gana la versión MÁS RECIENTE (comparando fecha de guardado).
+  // Esto refleja cambios hechos en otro dispositivo.
+  const parseFecha = s => {
+    if(!s) return 0;
+    const t = Date.parse(s);
+    if(!isNaN(t)) return t;
+    // Formato es-EC: "25/6/2026, 6:30:01 p. m."
+    const m = String(s).match(/(\d{1,2})\/(\d{1,2})\/(\d{4}),?\s*(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(a\.?\s*m\.?|p\.?\s*m\.?)?/i);
+    if(m){
+      let [_,d,mo,y,h,mi,se,ap] = m;
+      h = parseInt(h,10);
+      if(ap && /p/i.test(ap) && h<12) h+=12;
+      if(ap && /a/i.test(ap) && h===12) h=0;
+      return new Date(+y,+mo-1,+d,h,+mi,+(se||0)).getTime();
+    }
+    return 0;
+  };
+  const mapa = {};
+  local.forEach(c=>{ mapa[String(c.num)] = c; });
+  CLOUD_HIST.forEach(cn=>{
+    const k = String(cn.num);
+    const cl = mapa[k];
+    if(!cl){ mapa[k] = cn; return; }
+    // Ambos existen: comparar fecha, gana el más reciente
+    const fL = parseFecha(cl.savedAt);
+    const fN = parseFecha(cn.savedAt);
+    if(fN >= fL) mapa[k] = cn;
+  });
+  const hist = Object.values(mapa).sort((a,b)=>parseInt(b.num,10)-parseInt(a.num,10));
   const container=document.getElementById('histList');
   if(hist.length===0){
     container.innerHTML='<div class="hist-empty">📭 Aún no hay cotizaciones guardadas.<br><small>Haz clic en <b>💾 Guardar</b> para registrar la cotización actual.</small></div>';
