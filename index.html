@@ -1462,9 +1462,12 @@ agendaBtn.onclick=()=>{
     `<div style="margin:6px 0">${itemsHtml}</div>`+
     `<div><b>💰 Total:</b> ${totalTxt}</div>`+
     (notas?`<div style="margin-top:4px;color:#555;font-size:12px">📝 ${notas}</div>`:'');
-  // Fecha por defecto: +30 días
-  const d=new Date();d.setDate(d.getDate()+30);
-  document.getElementById('agendaFecha').value=d.toISOString().slice(0,16);
+  // Fecha por defecto: usa los días de entrega de la cotización (días laborables)
+  const d=sumarDiasLaborables(new Date(), diasEntrega());
+  // Ajustar a hora local para el input datetime-local
+  const off=d.getTimezoneOffset();
+  const local=new Date(d.getTime()-off*60000);
+  document.getElementById('agendaFecha').value=local.toISOString().slice(0,16);
   agendaStatus.className='agenda-status';
   agendaStatus.textContent='';
   agendaModal.classList.add('open');
