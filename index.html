@@ -1868,7 +1868,8 @@ async function syncGuardar(cot){
         cedula: cot.cedula || '',
         direccion: cot.direccion || '',
         mail: cot.mail || '',
-        atencion: cot.atencion || ''
+        atencion: cot.atencion || '',
+        diasEntrega: cot.diasEntrega || document.getElementById('fDiasEntrega')?.value || '30'
       })
     });
     syncStatus('☁️ Guardado en la nube', '#22c55e');
@@ -1935,6 +1936,7 @@ async function syncListar(){
         mail: row.mail || '',
         atencion: row.atencion || '',
         factura: row.factura || '',
+        diasEntrega: row.diasEntrega || '30',
         _cloud: true
       }));
     }
