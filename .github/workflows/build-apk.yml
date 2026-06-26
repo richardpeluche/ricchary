@@ -26,8 +26,8 @@ jobs:
 
       - name: Accept Android licenses and install components
         run: |
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null 2>&1 || true
-          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-34" "build-tools;34.0.0"
+          yes |       rm -rf $ANDROID_HOME/platforms/android-35 || true
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-35" "build-tools;34.0.0"
 
       - name: Install Gradle 7.6.3
         run: |
