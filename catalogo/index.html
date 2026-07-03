@@ -1278,6 +1278,7 @@ footer{border-top:1px solid var(--brd);padding:30px clamp(16px,4vw,56px);display
 
 
 
+<input type="file" id="filePicker" accept="image/*" style="display:none">
 <script>
 const PRICES={  g1:[[6,3.50],[12,2.00],[100,1.70],[1000,1.30]],
   g2:[[12,5.50],[50,5.00]],
@@ -1351,8 +1352,9 @@ document.querySelectorAll('.pill').forEach(p=>{p.addEventListener('click',()=>{
 
 let currentSlot=null;
 function toggleEdit(){document.body.classList.toggle('editing');const b=document.getElementById('editBtn');b.classList.toggle('active');b.textContent=document.body.classList.contains('editing')?'✅ Salir de edición':'✏️ Modo edición'}
-function pick(id){currentSlot=id;document.getElementById('filePicker').click()}
-document.getElementById('filePicker').addEventListener('change',function(e){
+function pick(id){currentSlot=id;const fp=document.getElementById('filePicker');if(fp)fp.click()}
+const filePickerEl=document.getElementById('filePicker');
+if(filePickerEl)filePickerEl.addEventListener('change',function(e){
   const file=e.target.files[0];if(!file||!currentSlot)return;
   const reader=new FileReader();
   reader.onload=function(ev){
