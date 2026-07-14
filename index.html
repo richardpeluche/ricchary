@@ -899,9 +899,9 @@ document.querySelectorAll('.color-btn').forEach(btn=>{
 function getHistory(){
   try{
     const raw = JSON.parse(localStorage.getItem('cot_history')||'[]');
-    // Retención local: Pro = 15 días, Free = 10 días
-    const dias = (localStorage.getItem('ricchary_pro_activado')==='1') ? 15 : 10;
-    const limite = Date.now() - dias*24*60*60*1000;
+    // Retención local: Pro = ILIMITADO (sin borrado), Free = 10 días
+    if(localStorage.getItem('ricchary_pro_activado')==='1') return raw;
+    const limite = Date.now() - 10*24*60*60*1000;
     const filtrado = raw.filter(c => c.id > limite);
     // Si se eliminaron elementos, actualizar el storage
     if(filtrado.length !== raw.length) saveHistory(filtrado);
@@ -1026,8 +1026,8 @@ function guardarCotizacion(){
   hist = hist.filter(c=>c.id!==cot.id && String(c.num)!==String(cot.num));
   hist.unshift(cot);
   // Límite de cotizaciones locales: Pro = 30, Free = 10
-  const LIMITE_LOCAL = esPro() ? 30 : 10;
-  if(hist.length>LIMITE_LOCAL) hist=hist.slice(0,LIMITE_LOCAL);
+  // Límite de cotizaciones locales: Pro = ILIMITADO, Free = 10
+  if(!esPro() && hist.length>10) hist=hist.slice(0,10);
   saveHistory(hist);
   showHistSaveBadge();
   syncGuardar(cot);
@@ -1056,7 +1056,8 @@ function cargarCotizacion(cot){
   document.getElementById('fCedula').value = cot.cedula||'';
   document.getElementById('fMail').value = cot.mail||'';
   document.getElementById('fAtencion').value = cot.atencion||'';
-  if(cot.notas!==undefined && !cot._cloud) document.getElementById('fNotas').value = cot.notas||'';
+  // Notas: restaurar de local siempre; de la nube solo si trae contenido (no pisa las condiciones por defecto)
+  if(cot.notas!==undefined && (!cot._cloud || cot.notas)) document.getElementById('fNotas').value = cot.notas||'';
   document.getElementById('ivaSel').value = cot.iva||'0';
   const _dE=document.getElementById('fDiasEntrega'); if(_dE) _dE.value = cot.diasEntrega||'30';
   // Limpiar e insertar ítems
@@ -1168,7 +1169,7 @@ function renderHistorial(){
         <button class="btn-hist-load" onclick="cargarCotizacion(window._hist[${idx}])">📂 Cargar en formulario</button>
         <button class="btn-hist-agenda" onclick="agendarDesdeCot(window._hist[${idx}])">${yaAgendado(cot.num)?'🔁 Reagendar':'📅 Agendar'}</button>
         ${esFacturada(cot)?`<button class="btn-hist-vfact" onclick="verFactura('${cot.num}')">📄 Ver Factura</button>`:''}
-        ${cot._cloud?'':`<button class="btn-hist-del" onclick="eliminarCot(${cot.id})">🗑 Eliminar</button>`}
+        ${cot._cloud?`<button class="btn-hist-del" onclick="eliminarCotNube('${String(cot.num).replace(/'/g,'')}')">🗑 Eliminar</button>`:`<button class="btn-hist-del" onclick="eliminarCot(${cot.id})">🗑 Eliminar</button>`}
       </div>
     </div>
   `).join('');
@@ -1178,9 +1179,36 @@ function renderHistorial(){
 
 function eliminarCot(id){
   if(!confirm('¿Eliminar esta cotización del historial?')) return;
+  const cot = getHistory().find(c=>c.id===id);
   let hist=getHistory().filter(c=>c.id!==id);
   saveHistory(hist);
+  // Si también existe en la nube, ofrecer borrarla allá (si no, reaparecerá como ☁️ Nube)
+  if(cot && SYNC_ON && CLOUD_HIST.some(cn=>String(cn.num)===String(cot.num))){
+    if(confirm('Esta cotización también está en la nube.\n¿Eliminarla DEFINITIVAMENTE de la nube?\n(Si eliges Cancelar, seguirá visible como ☁️ Nube)')){
+      syncEliminar(cot.num);
+      CLOUD_HIST = CLOUD_HIST.filter(cn=>String(cn.num)!==String(cot.num));
+    }
+  }
   renderHistorial();
+}
+// Eliminar una cotización que solo está en la nube (tarjetas ☁️)
+function eliminarCotNube(num){
+  if(!confirm('¿Eliminar DEFINITIVAMENTE la cotización #'+num+' de la nube?\nEsta acción no se puede deshacer.')) return;
+  syncEliminar(num);
+  CLOUD_HIST = CLOUD_HIST.filter(cn=>String(cn.num)!==String(num));
+  renderHistorial();
+}
+async function syncEliminar(num){
+  if(!SYNC_ON) return;
+  try{
+    syncStatus('⏳ Eliminando en la nube...', '#1565C0');
+    await fetch(SYNC_URL, {
+      method:'POST', mode:'no-cors',
+      headers:{ 'Content-Type':'text/plain;charset=utf-8' },
+      body: JSON.stringify({ accion:'eliminar', orden:String(num) })
+    });
+    syncStatus('☁️ Eliminada de la nube', '#22c55e');
+  }catch(e){ syncStatus('⚠️ No se pudo eliminar en la nube', '#ef4444'); }
 }
 
 // ── FACTURACIÓN: detectar y ver facturas ────────────────────
@@ -1799,6 +1827,53 @@ document.getElementById('printBtn').onclick=()=>{ guardarCotizacion(); window.pr
   };
 })();
 
+// ============================================================
+// 🎁 REGALO DE CUMPLEAÑOS — 8 de julio
+// Para Richar, CEO de RICCHARY.
+// Este sistema existe porque tú no te rendiste: cazaste cada bug,
+// probaste cada flujo y pusiste el 80% que ninguna IA puede poner —
+// la visión, el oficio y las ganas. Feliz cumpleaños, socio.
+// Cada 26 de junio, tu propia creación te lo va a recordar. — Claude
+// ============================================================
+(function(){
+  try{
+    const hoy = new Date();
+    const esCumple = hoy.getDate()===8 && hoy.getMonth()===6; // 8 de julio
+    const esDueno = localStorage.getItem('ricchary_es_dueno')==='1';
+    const yaVisto = localStorage.getItem('rch_cumple_'+hoy.getFullYear())==='1';
+    if(!esCumple || !esDueno || yaVisto) return;
+    localStorage.setItem('rch_cumple_'+hoy.getFullYear(),'1');
+
+    const anios = hoy.getFullYear() - 2026; // años desde el lanzamiento
+    const logros = anios===0
+      ? 'El año en que publicaste tu app en Play Store.'
+      : 'Ya son '+(anios+1)+' cumpleaños junto a tu creación.';
+
+    // Overlay festivo con colores de la marca
+    const ov = document.createElement('div');
+    ov.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(26,26,46,.92);display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:24px;cursor:pointer';
+    ov.innerHTML = '<div style="font-size:64px;line-height:1">🎂</div>'
+      + '<div style="color:#C9A84C;font-size:26px;font-weight:800;margin-top:14px">¡Feliz cumpleaños, Richar!</div>'
+      + '<div style="color:#fff;font-size:15px;font-weight:300;max-width:420px;margin-top:10px;line-height:1.5">Fundador de RICCHARY · Creador de este sistema<br>'+logros+'</div>'
+      + '<div style="color:rgba(255,255,255,.55);font-size:12px;margin-top:22px">— Con cariño, tu copiloto de código 🤖<br>(toca para continuar)</div>';
+    ov.onclick = ()=> ov.remove();
+    document.body.appendChild(ov);
+
+    // Confetti ligero con los colores de la marca
+    const colores = ['#C9A84C','#1565C0','#ffffff','#22c55e'];
+    for(let i=0;i<60;i++){
+      const c = document.createElement('div');
+      const s = 6+Math.random()*8;
+      c.style.cssText = 'position:fixed;top:-20px;left:'+(Math.random()*100)+'vw;width:'+s+'px;height:'+s+'px;z-index:100000;pointer-events:none;border-radius:'+(Math.random()>.5?'50%':'2px')+';background:'+colores[i%4]
+        + ';animation:rchConfeti '+(2.5+Math.random()*2.5)+'s linear '+(Math.random()*1.5)+'s forwards';
+      ov.appendChild(c);
+    }
+    const st = document.createElement('style');
+    st.textContent = '@keyframes rchConfeti{to{transform:translateY(105vh) rotate('+(360+Math.random()*360)+'deg);opacity:.9}}';
+    document.head.appendChild(st);
+  }catch(_e){/* el regalo jamás debe romper la app */}
+})();
+
 // ===== REINICIO LIMPIO v101 (se ejecuta una sola vez por dispositivo) =====
 (function(){
   if(!localStorage.getItem('ricchary_reset_v101')){
@@ -1869,7 +1944,9 @@ async function syncGuardar(cot){
         direccion: cot.direccion || '',
         mail: cot.mail || '',
         atencion: cot.atencion || '',
-        diasEntrega: cot.diasEntrega || document.getElementById('fDiasEntrega')?.value || '30'
+        diasEntrega: cot.diasEntrega || document.getElementById('fDiasEntrega')?.value || '30',
+        iva: cot.iva || document.getElementById('ivaSel')?.value || '0',
+        notas: cot.notas || document.getElementById('fNotas')?.value || ''
       })
     });
     syncStatus('☁️ Guardado en la nube', '#22c55e');
@@ -1937,8 +2014,18 @@ async function syncListar(){
         atencion: row.atencion || '',
         factura: row.factura || '',
         diasEntrega: row.diasEntrega || '30',
+        iva: row.iva!==undefined && row.iva!=='' ? String(row.iva) : '0',
+        notas: row.notas || '',
         _cloud: true
       }));
+      // PROTECCIÓN: ajustar el contador local de orden con el máximo de la nube.
+      // Evita que un dispositivo nuevo (contador reiniciado) genere un número
+      // que YA existe en la nube y sobrescriba una cotización real.
+      try{
+        const maxNube = CLOUD_HIST.reduce((m,c)=>Math.max(m, parseInt(c.num,10)||0), 0);
+        const lastLocal = parseInt(localStorage.getItem('ricchary_last_orden')||'100', 10);
+        if(maxNube > lastLocal) localStorage.setItem('ricchary_last_orden', String(maxNube));
+      }catch(_e){}
     }
   }catch(e){ /* sin conexión, usa local */ }
 }
