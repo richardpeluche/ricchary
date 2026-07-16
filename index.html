@@ -193,6 +193,10 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .btn-hist-rfact{background:#fff;color:#0d9488;border-color:#0d9488}
 .estado-sel{font-size:11px;font-weight:700;padding:3px 6px;border-radius:8px;border:1.5px solid;background:#fff;cursor:pointer}
 .badge-nube{display:inline-block;background:#64748b;color:#fff;font-size:9px;font-weight:800;padding:2px 7px;border-radius:10px;margin-left:6px;vertical-align:middle}
+.hist-filtros{display:flex;gap:6px;margin:10px 0 14px;flex-wrap:wrap}
+.hist-filtro-btn{flex:1;min-width:90px;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;padding:8px 6px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
+.hist-filtro-btn.activo{background:#1565C0;color:#fff;border-color:#1565C0}
+.hist-vacio{text-align:center;color:#94a3b8;font-size:13px;padding:30px 16px;line-height:1.5}
 .badge-agendado{display:inline-block;background:#22c55e;color:#fff;font-size:9px;font-weight:800;padding:2px 7px;border-radius:10px;margin-left:6px;vertical-align:middle}
 .hist-save-badge{position:absolute;top:-8px;right:-8px;background:var(--brand);color:#fff;border-radius:20px;font-size:10px;font-weight:800;padding:2px 8px;display:none}
 
@@ -276,6 +280,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .fact-box h3{color:#1A1A2E;font-size:18px;margin-bottom:6px}
 .fact-amb{display:inline-block;font-size:11px;font-weight:800;padding:3px 10px;border-radius:12px;margin-bottom:12px}
 .fact-amb-prueba{background:#fef3c7;color:#b45309}
+.fact-amb-prod{background:#dcfce7;color:#15803d}
 .fact-amb-prod{background:#fee2e2;color:#b91c1c}
 .fact-resumen{background:#f8fafc;border-radius:10px;padding:14px;font-size:13px;line-height:1.7;margin:12px 0}
 .fact-resumen b{color:#1A1A2E}
@@ -381,7 +386,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 <div id="factOverlay" class="fact-overlay">
   <div class="fact-box">
     <h3>📄 Generar Factura Electrónica</h3>
-    <span class="fact-amb fact-amb-prueba" id="factAmb">🧪 AMBIENTE DE PRUEBAS</span>
+    <span class="fact-amb" id="factAmb"></span>
     <div class="fact-resumen" id="factResumen"></div>
     <label class="fact-check">
       <input type="checkbox" id="factSeguro">
@@ -640,8 +645,13 @@ Este documento es de carácter contrato cliente-ofertador, que firmado constituy
 <!-- MODAL HISTORIAL -->
 <div class="modal-overlay" id="histModal">
   <div class="hist-box">
-    <div class="hist-title">📋 Últimas 10 Cotizaciones</div>
+    <div class="hist-title">📋 Historial de Cotizaciones</div>
     <button class="modal-close" id="histClose">✕</button>
+    <div class="hist-filtros">
+      <button class="hist-filtro-btn activo" data-filtro="activas" onclick="setFiltroHist('activas')">🔵 Activas</button>
+      <button class="hist-filtro-btn" data-filtro="todas" onclick="setFiltroHist('todas')">📋 Todas</button>
+      <button class="hist-filtro-btn" data-filtro="entregadas" onclick="setFiltroHist('entregadas')">✅ Entregadas</button>
+    </div>
     <div id="histList"></div>
   </div>
 </div>
@@ -702,6 +712,15 @@ Este documento es de carácter contrato cliente-ofertador, que firmado constituy
           <button type="button" id="cfgTestSync" style="flex:1;background:#1565C0;color:#fff;border:none;padding:8px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">🔗 Probar conexión</button>
         </div>
         <div id="cfgSyncStatus" style="font-size:11px;margin-top:5px;display:none"></div>
+        <!-- Selector de ambiente de facturación -->
+        <div id="cfgAmbienteBox" style="margin-top:12px;padding:12px;border-radius:10px;border:1px solid #e2e8f0;background:#fafbfc">
+          <div style="font-size:12px;font-weight:700;color:#1565C0;margin-bottom:8px">🧾 Ambiente de facturación electrónica</div>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:#374151">
+            <input type="checkbox" id="cfgDatilProd" style="width:18px;height:18px;cursor:pointer">
+            <span>Activar <b>facturación REAL</b> (producción SRI)</span>
+          </label>
+          <div id="cfgAmbienteMsg" style="font-size:11px;margin-top:8px;padding:8px;border-radius:6px;line-height:1.4"></div>
+        </div>
         <!-- Instrucciones colapsables UNIFICADAS -->
         <div id="cfgSyncInstrToggle" onclick="document.getElementById('cfgSyncInstr').style.display=document.getElementById('cfgSyncInstr').style.display==='none'?'block':'none'" style="font-size:12px;color:#1565C0;cursor:pointer;margin-top:8px;text-decoration:underline;font-weight:600">
           📖 ¿Cómo configuro mi cuenta? (guía paso a paso)
@@ -1114,6 +1133,13 @@ function agendarDesdeCot(cot){
 }
 
 // Renderiza el listado del historial
+function setFiltroHist(f){
+  window._filtroHist = f;
+  document.querySelectorAll('.hist-filtro-btn').forEach(b=>{
+    b.classList.toggle('activo', b.dataset.filtro===f);
+  });
+  renderHistorial();
+}
 function renderHistorial(){
   const local=getHistory();
   // Fusionar local + nube. Si una cotización está en ambos (mismo nº),
@@ -1145,10 +1171,47 @@ function renderHistorial(){
     const fN = parseFecha(cn.savedAt);
     if(fN >= fL) mapa[k] = cn;
   });
-  const hist = Object.values(mapa).sort((a,b)=>parseInt(b.num,10)-parseInt(a.num,10));
+  const histFull = Object.values(mapa).sort((a,b)=>parseInt(b.num,10)-parseInt(a.num,10));
+  // Filtro por estado: activas (no entregadas) / todas / entregadas
+  const filtro = window._filtroHist || 'activas';
+  // Clasificación automática según el flujo real de trabajo:
+  // - Agendada + entrega ya pasó +5 días  → TERMINADA
+  // - Agendada + entrega aún no llega      → ACTIVA (en proceso)
+  // - No agendada + creada hace <15 días   → ACTIVA (cotización reciente)
+  // - No agendada + creada hace >15 días   → solo en "Todas" (no cerró)
+  // El estado manual "Entregado" siempre cuenta como TERMINADA (respeta marcado manual).
+  const AHORA = Date.now();
+  const D = 24*60*60*1000;
+  const claseCot = (cot)=>{
+    // Marcado manual tiene prioridad
+    if((cot.estado||'')==='Entregado') return 'terminada';
+    const ag = yaAgendado(cot.num);
+    if(ag && ag.entrega){
+      const tEnt = Date.parse(ag.entrega);
+      if(!isNaN(tEnt)){
+        return (AHORA > tEnt + 5*D) ? 'terminada' : 'activa';
+      }
+      // agendada sin fecha parseable → en proceso
+      return 'activa';
+    }
+    // No agendada: activa si es reciente (< 15 días)
+    const creada = cot.id || 0;
+    return (creada > AHORA - 15*D) ? 'activa' : 'vieja';
+  };
+  const hist = histFull.filter(cot=>{
+    const cl = claseCot(cot);
+    if(filtro==='entregadas') return cl==='terminada';
+    if(filtro==='activas') return cl==='activa';
+    return true; // todas (incluye activas, terminadas y viejas sin cerrar)
+  });
   const container=document.getElementById('histList');
   if(hist.length===0){
-    container.innerHTML='<div class="hist-empty">📭 Aún no hay cotizaciones guardadas.<br><small>Haz clic en <b>💾 Guardar</b> para registrar la cotización actual.</small></div>';
+    const msg = filtro==='activas'
+      ? '🎉 No hay cotizaciones activas.<br><small>Tus pedidos en proceso y cotizaciones recientes aparecen aquí. Revisa <b>✅ Entregadas</b> o <b>📋 Todas</b>.</small>'
+      : filtro==='entregadas'
+      ? '📦 Aún no hay pedidos entregados.<br><small>Un pedido se marca como entregado 5 días después de su fecha de entrega agendada (o al ponerlo en estado <b>Entregado</b>).</small>'
+      : '📭 Aún no hay cotizaciones guardadas.<br><small>Haz clic en <b>💾 Guardar</b> para registrar la cotización actual.</small>';
+    container.innerHTML='<div class="hist-vacio">'+msg+'</div>';
     return;
   }
   container.innerHTML=hist.map((cot,idx)=>`
@@ -1264,6 +1327,18 @@ function aplicarFirmas(empresa, rep){
 }
 
 // Cargar config guardada
+function actualizarMsgAmbiente(){
+  const m=document.getElementById('cfgAmbienteMsg');
+  if(!m) return;
+  const prod = localStorage.getItem('cfg_datil_prod')==='1';
+  if(prod){
+    m.style.background='#dcfce7'; m.style.color='#15803d';
+    m.innerHTML='✅ <b>Facturación REAL activa.</b> Tus facturas son válidas ante el SRI.';
+  } else {
+    m.style.background='#fef3c7'; m.style.color='#b45309';
+    m.innerHTML='🧪 <b>Modo pruebas.</b> Las facturas NO tienen validez fiscal. Actívalo solo cuando tu cuenta Datil esté lista para producción.';
+  }
+}
 function loadConfig(){
   const g=localStorage.getItem('cfg_gmail')||'';
   const e=localStorage.getItem('cfg_empresa')||'';
@@ -1276,6 +1351,20 @@ function loadConfig(){
   const cfgLk=document.getElementById('cfgLink');if(cfgLk&&lk)cfgLk.value=lk;
   const su=localStorage.getItem('cfg_sync_url')||'';
   const cfgSu=document.getElementById('cfgSyncUrl');if(cfgSu&&su)cfgSu.value=su;
+  // Selector de ambiente de facturación
+  const chkProd=document.getElementById('cfgDatilProd');
+  if(chkProd){
+    chkProd.checked = localStorage.getItem('cfg_datil_prod')==='1';
+    actualizarMsgAmbiente();
+    chkProd.onchange = function(){
+      if(this.checked){
+        const ok = confirm('⚠️ FACTURACIÓN REAL (Producción SRI)\n\nAl activar esto, las facturas que emitas serán VÁLIDAS ante el SRI y no se pueden deshacer.\n\nAntes de activar, confirma que:\n• Tu cuenta Datil está aprobada para producción\n• Desactivaste "Modo de pruebas" dentro de Datil\n• Tu Apps Script tiene tus datos reales\n\n¿Activar facturación real?');
+        if(!ok){ this.checked=false; return; }
+      }
+      localStorage.setItem('cfg_datil_prod', this.checked?'1':'0');
+      actualizarMsgAmbiente();
+    };
+  }
   aplicarFirmas(e, rep);
   if(l){
     cfgLogoPreview.innerHTML='<img src="'+l+'" alt="logo">';
@@ -1637,7 +1726,7 @@ document.getElementById('waBtn').onclick=()=>{
 
   const url = tel
     ? `https://wa.me/${tel}?text=${encodeURIComponent(msg)}`
-    : `https://wa.me/?text=${encodeURIComponent(msg)}`;
+    : `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
   window.open(url,'_blank');
   syncStatus('📲 Abriendo WhatsApp...', '#25D366');
 };
@@ -1657,6 +1746,13 @@ document.getElementById('printBtn').onclick=()=>{ guardarCotizacion(); window.pr
 
   function abrirFactura(){
     const cot = captureCotizacion();
+    // Badge de ambiente: refleja lo configurado (localStorage 'cfg_datil_prod' = '1' en producción)
+    const amb = document.getElementById('factAmb');
+    if(amb){
+      const enProd = localStorage.getItem('cfg_datil_prod')==='1';
+      amb.textContent = enProd ? '✅ FACTURACIÓN REAL (SRI)' : '🧪 AMBIENTE DE PRUEBAS';
+      amb.className = 'fact-amb ' + (enProd ? 'fact-amb-prod' : 'fact-amb-prueba');
+    }
     // Validaciones mínimas para facturar
     const faltan = [];
     if(!cot.cliente) faltan.push('Cliente');
@@ -1714,6 +1810,7 @@ document.getElementById('printBtn').onclick=()=>{ guardarCotizacion(); window.pr
           telefono: cot.telefono,
           iva: cot.iva,
           total: cot.total,
+          ambiente: localStorage.getItem('cfg_datil_prod')==='1' ? 2 : 1,
           items: cot.items.map(it=>({
             qty: it.qty, desc: it.desc, price: it.price, sub: it.sub
           }))
