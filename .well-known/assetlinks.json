@@ -3,6 +3,8 @@
   "target": {
     "namespace": "android_app",
     "package_name": "com.ricchary.cotizaciones",
-    "sha256_cert_fingerprints": ["REEMPLAZAR_CON_SHA256_DE_PLAY_CONSOLE"]
+    "sha256_cert_fingerprints": [
+      "CD:CB:B0:66:10:AC:E7:64:51:85:09:54:E3:4D:D6:7D:42:68:E8:80:B8:3E:04:C9:64:A1:6F:5B:2E:65:89:04"
+    ]
   }
 }]
