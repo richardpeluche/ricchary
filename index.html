@@ -46,6 +46,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 
 /* FORM */
 .form-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form-group{min-width:0}
+.form-group input,.form-group select,.form-group textarea{max-width:100%;box-sizing:border-box}
 .form-group{display:flex;flex-direction:column;gap:4px}
 .form-group label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px}
 .form-group input,.form-group select,.form-group textarea{border:0.5px solid var(--border);border-radius:6px;padding:6px 10px;font-size:13px;color:var(--text);background:var(--surface);transition:border-color 0.15s;font-family:inherit}
@@ -526,11 +528,11 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
     <div class="form-group"><label>Teléfono</label><input id="fTelefono" placeholder=""></div>
     <div class="form-group"><label>Dirección</label><input id="fDireccion" placeholder=""></div>
     <div class="form-group"><label>CI / RUC</label>
-      <div style="display:flex;gap:6px;align-items:center">
-        <input id="fCedula" placeholder="" style="flex:1">
-        <button type="button" id="btnBuscarRuc" title="Consultar en el SRI y autocompletar" style="background:#1565C0;color:#fff;border:0;border-radius:8px;padding:0 12px;height:38px;font-size:15px;cursor:pointer;white-space:nowrap">🔍</button>
+      <div style="display:flex;gap:5px;align-items:center;width:100%">
+        <input id="fCedula" placeholder="" style="flex:1;min-width:0">
+        <button type="button" id="btnBuscarRuc" title="Consultar en el SRI y autocompletar" style="flex:0 0 auto;background:#1565C0;color:#fff;border:0;border-radius:8px;width:40px;height:38px;font-size:16px;cursor:pointer;padding:0;line-height:1">🔍</button>
       </div>
-      <div id="rucStatus" style="font-size:11px;margin-top:4px;display:none;line-height:1.4"></div>
+      <div id="rucStatus" style="font-size:11px;margin-top:4px;display:none;line-height:1.4;word-break:break-word"></div>
     </div>
     <div class="form-group"><label>Email</label><input id="fMail" placeholder="correo@ejemplo.com"></div>
     <div class="form-group"><label>Atendido por</label><input id="fAtencion" placeholder="Nombre de quien atiende"></div>
