@@ -196,7 +196,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .estado-sel{font-size:11px;font-weight:700;padding:3px 6px;border-radius:8px;border:1.5px solid;background:#fff;cursor:pointer}
 .badge-nube{display:inline-block;background:#64748b;color:#fff;font-size:9px;font-weight:800;padding:2px 7px;border-radius:10px;margin-left:6px;vertical-align:middle}
 .hist-filtros{display:flex;gap:6px;margin:10px 0 14px;flex-wrap:wrap}
-.hist-filtro-btn{flex:1;min-width:90px;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;padding:8px 6px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
+.hist-filtro-btn{flex:1;min-width:78px;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;padding:8px 6px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
 .hist-filtro-btn.activo{background:#1565C0;color:#fff;border-color:#1565C0}
 .hist-vacio{text-align:center;color:#94a3b8;font-size:13px;padding:30px 16px;line-height:1.5}
 .badge-agendado{display:inline-block;background:#22c55e;color:#fff;font-size:9px;font-weight:800;padding:2px 7px;border-radius:10px;margin-left:6px;vertical-align:middle}
@@ -659,6 +659,7 @@ Este documento es de carácter contrato cliente-ofertador, que firmado constituy
       <button class="hist-filtro-btn activo" data-filtro="activas" onclick="setFiltroHist('activas')">🔵 Activas</button>
       <button class="hist-filtro-btn" data-filtro="todas" onclick="setFiltroHist('todas')">📋 Todas</button>
       <button class="hist-filtro-btn" data-filtro="entregadas" onclick="setFiltroHist('entregadas')">✅ Entregadas</button>
+      <button class="hist-filtro-btn" data-filtro="facturadas" onclick="setFiltroHist('facturadas')">🧾 Facturadas</button>
     </div>
     <div id="histList"></div>
   </div>
@@ -1207,6 +1208,7 @@ function renderHistorial(){
     return (creada > AHORA - 15*D) ? 'activa' : 'vieja';
   };
   const hist = histFull.filter(cot=>{
+    if(filtro==='facturadas') return esFacturada(cot);
     const cl = claseCot(cot);
     if(filtro==='entregadas') return cl==='terminada';
     if(filtro==='activas') return cl==='activa';
@@ -1214,7 +1216,9 @@ function renderHistorial(){
   });
   const container=document.getElementById('histList');
   if(hist.length===0){
-    const msg = filtro==='activas'
+    const msg = filtro==='facturadas'
+      ? '🧾 Aún no hay cotizaciones facturadas.<br><small>Cuando emitas una factura electrónica, aparecerá aquí.</small>'
+      : filtro==='activas'
       ? '🎉 No hay cotizaciones activas.<br><small>Tus pedidos en proceso y cotizaciones recientes aparecen aquí. Revisa <b>✅ Entregadas</b> o <b>📋 Todas</b>.</small>'
       : filtro==='entregadas'
       ? '📦 Aún no hay pedidos entregados.<br><small>Un pedido se marca como entregado 5 días después de su fecha de entrega agendada (o al ponerlo en estado <b>Entregado</b>).</small>'
@@ -2014,11 +2018,13 @@ document.getElementById('printBtn').onclick=()=>{ guardarCotizacion(); window.pr
       setIf('fCliente', j.razonSocial);
       setIf('fEmpresa', j.nombreComercial || j.razonSocial);
       setIf('fDireccion', j.direccion);
-      setIf('fAtencion', j.representante);
+      // NOTA: 'Atendido por' NO se autocompleta — es quien atiende de TU lado,
+      // no el representante legal del cliente (ese dato se muestra solo como info).
       if(ident.length === 13 || j.ruc){ const fc=document.getElementById('fCedula'); if(fc) fc.value = j.ruc || ident; }
 
       let msg = '✅ <b>' + (j.razonSocial||'') + '</b>';
       if(j.estado) msg += ' · Estado: ' + j.estado;
+      if(j.representante) msg += '<br>👤 Rep. legal: ' + j.representante;
       if(j.avisos && j.avisos.length){
         msg += '<br>⚠️ <b>ATENCIÓN:</b> ' + j.avisos.join(' · ');
         show(msg, '#b45309');
