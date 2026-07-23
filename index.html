@@ -525,7 +525,13 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
     <div class="form-group"><label>Cliente</label><input id="fCliente" placeholder=""></div>
     <div class="form-group"><label>Teléfono</label><input id="fTelefono" placeholder=""></div>
     <div class="form-group"><label>Dirección</label><input id="fDireccion" placeholder=""></div>
-    <div class="form-group"><label>CI / RUC</label><input id="fCedula" placeholder=""></div>
+    <div class="form-group"><label>CI / RUC</label>
+      <div style="display:flex;gap:6px;align-items:center">
+        <input id="fCedula" placeholder="" style="flex:1">
+        <button type="button" id="btnBuscarRuc" title="Consultar en el SRI y autocompletar" style="background:#1565C0;color:#fff;border:0;border-radius:8px;padding:0 12px;height:38px;font-size:15px;cursor:pointer;white-space:nowrap">🔍</button>
+      </div>
+      <div id="rucStatus" style="font-size:11px;margin-top:4px;display:none;line-height:1.4"></div>
+    </div>
     <div class="form-group"><label>Email</label><input id="fMail" placeholder="correo@ejemplo.com"></div>
     <div class="form-group"><label>Atendido por</label><input id="fAtencion" placeholder="Nombre de quien atiende"></div>
   </div>
@@ -1969,6 +1975,65 @@ document.getElementById('printBtn').onclick=()=>{ guardarCotizacion(); window.pr
     st.textContent = '@keyframes rchConfeti{to{transform:translateY(105vh) rotate('+(360+Math.random()*360)+'deg);opacity:.9}}';
     document.head.appendChild(st);
   }catch(_e){/* el regalo jamás debe romper la app */}
+})();
+
+
+// ===== CONSULTA DE RUC/CÉDULA AL SRI (autocompletar cliente) =====
+(function(){
+  const btn = document.getElementById('btnBuscarRuc');
+  if(!btn) return;
+  const st = document.getElementById('rucStatus');
+  const show = (msg, color) => { if(st){ st.style.display='block'; st.style.color=color; st.innerHTML=msg; } };
+
+  async function buscarRuc(){
+    const ident = (document.getElementById('fCedula')?.value||'').replace(/[^0-9]/g,'');
+    if(ident.length !== 10 && ident.length !== 13){
+      show('⚠️ Ingresa una cédula (10 dígitos) o RUC (13 dígitos).', '#b45309');
+      return;
+    }
+    if(!SYNC_ON){
+      show('⚠️ Necesitas la sincronización activada (versión Pro) para consultar al SRI.', '#b45309');
+      return;
+    }
+    btn.disabled = true; btn.textContent = '⏳';
+    show('⏳ Consultando al SRI...', '#1565C0');
+    try{
+      const r = await fetch(SYNC_URL + '?accion=consultarRuc&ruc=' + encodeURIComponent(ident));
+      const j = await r.json();
+      if(!j || !j.ok){
+        show('❌ ' + ((j&&j.error) || 'No se encontró el contribuyente.') + ' Puedes llenar los datos manualmente.', '#b91c1c');
+        return;
+      }
+      // Autocompletar (sin pisar lo que el usuario ya escribió, salvo que esté vacío)
+      const setIf = (id, val) => {
+        const el = document.getElementById(id);
+        if(el && val && !el.value.trim()) el.value = val;
+      };
+      setIf('fCliente', j.razonSocial);
+      setIf('fEmpresa', j.nombreComercial || j.razonSocial);
+      setIf('fDireccion', j.direccion);
+      setIf('fAtencion', j.representante);
+      if(ident.length === 13 || j.ruc){ const fc=document.getElementById('fCedula'); if(fc) fc.value = j.ruc || ident; }
+
+      let msg = '✅ <b>' + (j.razonSocial||'') + '</b>';
+      if(j.estado) msg += ' · Estado: ' + j.estado;
+      if(j.avisos && j.avisos.length){
+        msg += '<br>⚠️ <b>ATENCIÓN:</b> ' + j.avisos.join(' · ');
+        show(msg, '#b45309');
+        alert('⚠️ ALERTA DEL SRI\n\n' + j.avisos.join('\n') + '\n\nRevisa antes de facturar a este contribuyente.');
+      } else {
+        show(msg, '#15803d');
+      }
+    }catch(e){
+      show('❌ No se pudo consultar. Revisa tu conexión o llena los datos manualmente.', '#b91c1c');
+    }finally{
+      btn.disabled = false; btn.textContent = '🔍';
+    }
+  }
+  btn.onclick = buscarRuc;
+  // Enter en el campo también consulta
+  const fc = document.getElementById('fCedula');
+  if(fc) fc.addEventListener('keydown', ev => { if(ev.key==='Enter'){ ev.preventDefault(); buscarRuc(); } });
 })();
 
 // ===== REINICIO LIMPIO v101 (se ejecuta una sola vez por dispositivo) =====
