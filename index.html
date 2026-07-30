@@ -299,6 +299,17 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .fact-status.proc{background:#dbeafe;color:#1565C0;display:block}
 
 /* ===== ONBOARDING ===== */
+.splash-overlay{position:fixed;inset:0;z-index:1100;background:#000 url('fondo-app.jpg') center center/cover no-repeat;display:flex;align-items:center;justify-content:center;padding:24px}
+.splash-overlay.hidden{display:none}
+.splash-box{max-width:380px;width:100%;text-align:center;color:#fff}
+.splash-logo-video{width:100%;max-width:340px;height:auto;margin-bottom:18px;pointer-events:none;mix-blend-mode:screen}
+.splash-brand{font-size:30px;font-weight:900;letter-spacing:1px}
+.splash-sub{font-size:14px;font-weight:300;opacity:.85;margin-bottom:24px}
+.splash-features{list-style:none;text-align:left;background:rgba(255,255,255,.08);border-radius:14px;padding:18px 20px;margin-bottom:22px}
+.splash-features li{font-size:13.5px;line-height:1.9;color:#fff}
+.splash-start-btn{width:100%;background:#fff;color:#1565C0;border:0;padding:14px;border-radius:10px;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:16px}
+.splash-check{display:flex;align-items:center;justify-content:center;gap:8px;font-size:12.5px;color:rgba(255,255,255,.8);cursor:pointer}
+.splash-check input{width:16px;height:16px;cursor:pointer}
 .onb-overlay{position:fixed;inset:0;z-index:1000;background:linear-gradient(135deg,#1565C0,#0d3a73);display:none;align-items:center;justify-content:center;padding:20px}
 .onb-overlay.show{display:flex}
 .onb-box{background:#fff;border-radius:24px;max-width:440px;width:100%;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.4)}
@@ -403,6 +414,31 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 </div>
 
 <!-- ===== ONBOARDING / BIENVENIDA ===== -->
+<!-- PANTALLA DE INICIO (splash) — se muestra cada vez que se abre la app,
+     salvo que el usuario desmarque "Mostrar esta pantalla al iniciar" -->
+<div id="splashScreen" class="splash-overlay">
+  <div class="splash-box">
+    <video class="splash-logo-video" autoplay muted loop playsinline>
+      <source src="logo_animado.webm" type="video/webm">
+      <source src="logo_animado_fallback.mp4" type="video/mp4">
+    </video>
+    <ul class="splash-features">
+      <li><b>📝 Cotiza, envía por WhatsApp y agenda en segundos</b></li>
+      <li><b>♾️ Historial ilimitado en la nube (Pro)</b></li>
+      <li><b>💻📱 Trabaja desde tu PC y tu celular, sin perder nada (Pro)</b></li>
+      <li><b>📄 Facturación electrónica SRI</b></li>
+      <li><b>🔍 Autocompleta datos del cliente consultando el SRI</b></li>
+    </ul>
+
+    <button id="splashStartBtn" class="splash-start-btn">Empezar a Cotizar →</button>
+
+    <label class="splash-check">
+      <input type="checkbox" id="splashNoMostrar">
+      <span><b>No volver a mostrar esta pantalla</b></span>
+    </label>
+  </div>
+</div>
+
 <div id="onboarding" class="onb-overlay">
   <div class="onb-box">
     <div class="onb-slides">
@@ -412,6 +448,18 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
         <div class="onb-logo"><img id="onbLogo" src="icon-192.png" alt="logo" onerror="this.style.display='none'"></div>
         <h2>Bienvenido a tu Sistema de Cotizaciones</h2>
         <p>La forma más rápida de cotizar, enviar por WhatsApp y gestionar tus pedidos — sin complicaciones.</p>
+        <div style="margin-top:16px;text-align:left;background:#eef2ff;border-radius:12px;padding:14px 18px">
+          <div style="font-size:12.5px;font-weight:800;color:#1565C0;margin-bottom:8px">⚙️ Antes de empezar, configura tu perfil:</div>
+          <div style="font-size:13px;color:#374151;line-height:1.6">
+            Sube tu <b>logo</b> (si lo tienes) y aparecerá en tus cotizaciones · agrega el <b>nombre del vendedor o representante</b> · registra el <b>correo de tu empresa</b> — para una presentación más profesional ante tus clientes.
+          </div>
+        </div>
+        <div style="margin-top:14px;text-align:left;background:#f8fafc;border-radius:12px;padding:16px 18px">
+          <div style="font-size:13px;font-weight:800;color:#1565C0;margin-bottom:10px">🚀 Y ahora, con 3 pasos:</div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:13.5px;color:#374151"><span style="background:#1565C0;color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex:0 0 auto">1</span> Llena los datos del cliente y los productos</div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:13.5px;color:#374151"><span style="background:#1565C0;color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex:0 0 auto">2</span> Toca <b>💾 Guardar</b> para registrarla</div>
+          <div style="display:flex;align-items:center;gap:10px;font-size:13.5px;color:#374151"><span style="background:#1565C0;color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex:0 0 auto">3</span> Envíala por <b>WhatsApp</b> con un toque</div>
+        </div>
       </div>
 
       <!-- Slide 2: Qué hace -->
@@ -455,18 +503,32 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
         <button class="onb-pro-btn" id="onbProBtn">💬 Quiero la versión Pro</button>
       </div>
 
-      <!-- Slide 5: Empezar -->
+      <!-- Slide 5: Cómo activar la sincronización (resumen del manual) -->
       <div class="onb-slide" data-slide="4">
+        <h2>☁️ Activar sincronización (versión Pro)</h2>
+        <ul class="onb-list">
+          <li>1️⃣ En la app, toca <b>"Clic aquí para copiar la plantilla"</b> y haz una copia en tu Google Sheets</li>
+          <li>2️⃣ En tu copia: <b>Extensiones → Apps Script → Implementar → Nueva implementación</b></li>
+          <li>3️⃣ Copia la URL que termina en <code>/exec</code></li>
+          <li>4️⃣ Pégala en <b>⚙️ Configuración</b> de esta app y toca "Probar conexión"</li>
+        </ul>
+        <p style="font-size:12px;color:#94a3b8;margin-top:10px">Guía visual completa en el manual PDF (opcional), enlazado en Configuración.</p>
+      </div>
+
+      <!-- Slide 6: Empezar -->
+      <div class="onb-slide" data-slide="5">
         <div class="onb-logo"><img src="icon-192.png" alt="logo" onerror="this.style.display='none'"></div>
         <h2>¡Todo listo!</h2>
         <p>Configura tu empresa y logo en ⚙️ Configuración. Empieza a cotizar ahora mismo.</p>
+        <p style="font-size:12px;color:#94a3b8;margin-top:14px">💡 Puedes volver a ver esta guía cuando quieras desde Configuración → "Ver guía rápida"</p>
+        <p style="font-size:11px;margin-top:6px"><a href="https://richardpeluche.github.io/ricchary/RICCHARY_Manual_Usuario.pdf" target="_blank" style="color:#94a3b8;text-decoration:underline">📄 Ver manual completo en PDF (opcional)</a></p>
       </div>
 
     </div>
 
     <div class="onb-footer">
       <div class="onb-dots">
-        <span class="onb-dot active"></span><span class="onb-dot"></span><span class="onb-dot"></span><span class="onb-dot"></span><span class="onb-dot"></span>
+        <span class="onb-dot active"></span><span class="onb-dot"></span><span class="onb-dot"></span><span class="onb-dot"></span><span class="onb-dot"></span><span class="onb-dot"></span>
       </div>
       <div class="onb-nav">
         <button class="onb-skip" id="onbSkip">Saltar</button>
@@ -671,6 +733,8 @@ Este documento es de carácter contrato cliente-ofertador, que firmado constituy
     <div class="modal-title">⚙️ Configuración</div>
     <button class="modal-close" id="cfgClose">✕</button>
 
+    <button type="button" id="btnVerGuia" style="width:100%;background:#f0f7ff;color:#1565C0;border:1px solid #cfe0f7;padding:12px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:16px">❓ Ver guía / Ayuda</button>
+
     <div class="cfg-group">
       <label>📧 Gmail de la empresa</label>
       <input type="email" id="cfgGmail" placeholder="empresa@gmail.com">
@@ -695,8 +759,6 @@ Este documento es de carácter contrato cliente-ofertador, que firmado constituy
     </div>
 
     <div class="cfg-group">
-      <button type="button" onclick="verOnboarding()" style="width:100%;background:#eef2ff;color:#1565C0;border:1px solid #c7d2fe;padding:10px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">📖 Ver tutorial / Qué hace la app</button>
-      <button type="button" onclick="window.open('https://richardpeluche.github.io/ricchary/RICCHARY_Manual_Usuario.pdf','_blank')" style="width:100%;background:#fdf9ef;color:#8a6d1f;border:1px solid #e6d9b0;padding:10px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-top:8px">📄 Manual de usuario (PDF)</button>
     </div>
     <div class="cfg-group">
       <label>🔗 Link de contacto (WhatsApp)</label>
@@ -1882,6 +1944,27 @@ document.getElementById('printBtn').onclick=()=>{ guardarCotizacion(); window.pr
   // Tu WhatsApp de RICCHARY (cambia este número por el tuyo real)
   const WA_PRO = '593988928651'; // WhatsApp RICCHARY
 
+  // ===== PANTALLA DE INICIO (splash) =====
+  function initSplash(){
+    const sp = document.getElementById('splashScreen');
+    if(!sp) return;
+    // Se muestra siempre, salvo que el usuario haya marcado "no volver a mostrar"
+    if(localStorage.getItem('ricchary_splash_oculto') === '1'){
+      sp.classList.add('hidden');
+    }
+    const btn = document.getElementById('splashStartBtn');
+    const chk = document.getElementById('splashNoMostrar');
+    if(btn){
+      btn.onclick = () => {
+        if(chk && chk.checked){
+          localStorage.setItem('ricchary_splash_oculto', '1');
+        }
+        sp.classList.add('hidden');
+      };
+    }
+  }
+  initSplash();
+
   function initOnboarding(){
     const ob = document.getElementById('onboarding');
     if(!ob) return;
@@ -1901,6 +1984,11 @@ document.getElementById('printBtn').onclick=()=>{ guardarCotizacion(); window.pr
       dots.forEach((d,i)=>d.classList.toggle('active', i===n));
       btnNext.textContent = (n===total-1) ? '¡Empezar!' : 'Siguiente →';
       actual = n;
+    }
+    // Botón "Ver guía rápida" en Configuración: reabre el onboarding cuando el usuario quiera
+    const btnGuia = document.getElementById('btnVerGuia');
+    if(btnGuia){
+      btnGuia.onclick = () => { mostrar(0); ob.classList.add('show'); };
     }
     function cerrar(){
       ob.classList.remove('show');
