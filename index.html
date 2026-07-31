@@ -45,6 +45,16 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .section-title{font-size:11px;font-weight:700;color:var(--brand);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;padding-bottom:6px;border-bottom:2px solid var(--brand-light)}
 
 /* FORM */
+/* Evita que Android abra el diccionario/seleccion de texto al pulsar botones y
+   etiquetas (ese popup tapaba los botones de accion). Los campos de escritura
+   siguen siendo seleccionables normalmente. */
+button, label, .btn, .modal-title, .hist-title, .card-title, h1, h2, h3, th,
+.hist-filtro-btn, .onb-slide, .splash-box{
+  -webkit-user-select:none; user-select:none; -webkit-touch-callout:none;
+}
+input, textarea, select, [contenteditable]{
+  -webkit-user-select:text; user-select:text;
+}
 .form-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .form-group{min-width:0}
 .form-group input,.form-group select,.form-group textarea{max-width:100%;box-sizing:border-box}
