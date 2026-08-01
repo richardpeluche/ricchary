@@ -159,15 +159,19 @@ input, textarea, select, [contenteditable]{
 }
 
 /* MODAL CONFIGURACIÓN */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;align-items:center;justify-content:center}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;align-items:center;justify-content:center;overflow-y:auto;padding:12px 0}
 .modal-overlay.open{display:flex}
-.modal-box{background:#fff;border-radius:16px;padding:28px 32px;max-width:440px;width:95%;box-shadow:0 8px 40px rgba(0,0,0,0.18);position:relative}
+.modal-box{background:#fff;border-radius:16px;padding:28px 32px;max-width:440px;width:95%;box-shadow:0 8px 40px rgba(0,0,0,0.18);position:relative;max-height:90vh;max-height:90dvh;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .modal-title{font-size:16px;font-weight:800;color:var(--brand);margin-bottom:18px;display:flex;align-items:center;gap:8px}
 .modal-close{position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);padding:0}
 .cfg-group{margin-bottom:16px}
 .cfg-group label{display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px}
 .cfg-group input{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--text)}
 .cfg-group input:focus{outline:none;border-color:var(--brand)}
+/* El campo de sincronizacion vive fuera de .cfg-group: se le da el mismo ancho
+   y estilo para que no quede angosto en movil */
+#cfgSyncUrl{width:100%;box-sizing:border-box;padding:9px 10px;border:1px solid var(--border);border-radius:8px;color:var(--text)}
+#cfgSyncUrl:focus{outline:none;border-color:var(--brand)}
 .cfg-save{width:100%;margin-top:6px;padding:9px;background:var(--brand);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;transition:opacity 0.15s}
 .cfg-save:hover{opacity:0.88}
 .cfg-logo-preview{width:100%;height:60px;border:1px dashed var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;margin-top:6px;cursor:pointer;background:var(--bg)}
@@ -251,7 +255,7 @@ input, textarea, select, [contenteditable]{
   /* Quitar anchos fijos de columnas en móvil */
   .items-table th,.items-table td{width:auto!important}
   /* Cualquier caja con ancho fijo se vuelve fluida */
-  .modal-box{max-width:95%;padding:20px 18px}
+  .modal-box{max-width:95%;padding:20px 18px;max-height:88vh;max-height:88dvh;overflow-y:auto}
   /* Inputs cómodos para el dedo y sin zoom en iOS */
   input,select,textarea{font-size:16px}
   /* Firmas y bloques que tenían ancho fijo */
@@ -2321,6 +2325,74 @@ document.addEventListener('DOMContentLoaded', function(){
   const b=document.getElementById('nuevaBtn');
   if(b) b.onclick = window.nuevaCotizacion;
 });
+
+
+// ===== BOTÓN ATRÁS DE ANDROID =====
+// Sin esto, el botón atrás CIERRA la app aunque haya un modal abierto.
+// Ahora el atrás cierra primero el modal/panel y solo sale si no hay ninguno.
+(function(){
+  // Cada capa: selector del elemento y la clase que indica "abierto"
+  const CAPAS = [
+    { sel:'#factOverlay',  abierta:'show'   },
+    { sel:'#agendaModal',  abierta:'open'   },
+    { sel:'#cfgModal',     abierta:'open'   },
+    { sel:'#histModal',    abierta:'open'   },
+    { sel:'#onboarding',   abierta:'show'   }
+  ];
+
+  function abiertas(){
+    return CAPAS.filter(k=>{
+      const e = document.querySelector(k.sel);
+      return e && e.classList.contains(k.abierta);
+    });
+  }
+  function cerrarUltima(){
+    const a = abiertas();
+    if(!a.length) return false;
+    const k = a[0]; // el primero de la lista = el más "encima"
+    const e = document.querySelector(k.sel);
+    e.classList.remove(k.abierta);
+    return true;
+  }
+
+  let marcado = false;   // ¿hay un estado de historial puesto por nosotros?
+  let cerrandoPorAtras = false;
+
+  function sincronizar(){
+    const hay = abiertas().length > 0;
+    if(hay && !marcado){
+      history.pushState({ rchModal:true }, '');
+      marcado = true;
+    } else if(!hay && marcado && !cerrandoPorAtras){
+      // Se cerró con la X o tocando fuera: consumimos nuestro estado
+      marcado = false;
+      if(history.state && history.state.rchModal) history.back();
+    }
+  }
+
+  // Detecta aperturas/cierres sin tener que tocar cada botón
+  const obs = new MutationObserver(sincronizar);
+  document.addEventListener('DOMContentLoaded', function(){
+    CAPAS.forEach(k=>{
+      const e = document.querySelector(k.sel);
+      if(e) obs.observe(e, { attributes:true, attributeFilter:['class'] });
+    });
+  });
+
+  window.addEventListener('popstate', function(){
+    if(abiertas().length){
+      cerrandoPorAtras = true;
+      marcado = false;
+      cerrarUltima();
+      setTimeout(()=>{ cerrandoPorAtras = false; }, 60);
+      // Si quedan capas abiertas debajo, volvemos a marcar
+      if(abiertas().length){
+        history.pushState({ rchModal:true }, '');
+        marcado = true;
+      }
+    }
+  });
+})();
 
 // ===== REINICIO LIMPIO v101 (se ejecuta una sola vez por dispositivo) =====
 (function(){
