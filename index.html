@@ -118,7 +118,16 @@ input, textarea, select, [contenteditable]{
 .sig-role{font-size:11px;font-weight:600;color:var(--brand);text-align:center}
 
 /* ACTIONS */
-.action-bar{display:flex;gap:8px;justify-content:flex-end;margin-top:1rem}
+.action-bar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;justify-content:flex-end;
+  margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid #e2e8f0}
+.action-bar button{padding:6px 12px!important;font-size:12.5px!important;border-radius:7px}
+.btn-inicio{background:rgba(255,255,255,.14);color:#fff;border:1.5px solid rgba(255,255,255,.42);
+  border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  width:42px;height:42px;padding:0;flex:0 0 auto;transition:background .15s,transform .1s}
+.btn-inicio:hover{background:rgba(255,255,255,.28)}
+.btn-inicio:active{transform:scale(.94)}
+.btn-inicio svg{display:block}
+.btn-inicio .ic{width:21px;height:21px}
 .btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:opacity 0.15s,transform 0.1s;display:flex;align-items:center;gap:6px}
 .btn:active{transform:scale(0.97)}
 .btn-primary{background:var(--brand);color:#fff}
@@ -217,7 +226,12 @@ input, textarea, select, [contenteditable]{
   #app{padding:0.6rem}
   /* Barra de acciones: permitir que los botones bajen de línea y se vean completos */
   .action-bar{flex-wrap:wrap;justify-content:center;gap:6px}
-  .action-bar button{flex:1 1 auto;min-width:128px;justify-content:center;padding:11px 10px;font-size:13px}
+  .action-bar button{flex:1 1 auto;min-width:98px;justify-content:center;padding:7px 8px!important;font-size:12px!important}
+  /* Los secundarios quedan solo con icono: se gana una fila entera */
+  #histBtn .lbl,#cfgBtn .lbl{display:none}
+  #histBtn,#cfgBtn{flex:0 0 auto!important;min-width:0!important;width:40px;padding:7px 0!important}
+  #histBtn .ic,#cfgBtn .ic{width:18px;height:18px}
+  .btn-inicio{width:38px;height:38px}
   .add-img-slot,.add-row-btn{white-space:normal}
   /* Barra superior se apila */
   .topbar{flex-direction:column;align-items:flex-start;gap:10px;padding:0.8rem 1rem}
@@ -352,9 +366,127 @@ input, textarea, select, [contenteditable]{
   .onb-slide h2{font-size:19px}
   .onb-list li{font-size:13px}
 }
+/* Iconos SVG incrustados */
+.ic{width:1.15em;height:1.15em;flex:0 0 auto;display:inline-block;vertical-align:-.15em;
+  fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.btn-inicio .ic{width:21px;height:21px}
+.del-btn .ic{width:17px;height:17px}
+
+/* ═══════════════════════════════════════════════════════════════
+   V2 · TEMA VIDRIO AZUL — SOLO PANTALLA
+   Va dentro de @media screen, así la impresión y el PDF conservan
+   exactamente el diseño de siempre (fondo blanco, tarjetas planas).
+   ═══════════════════════════════════════════════════════════════ */
+@media screen{
+  body{background:#0e2a52}
+  body::before{
+    content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background:
+      radial-gradient(1100px 620px at 12% -12%, rgba(94,178,255,.38), transparent 62%),
+      radial-gradient(900px 520px at 112% 6%, rgba(0,212,255,.22), transparent 58%),
+      radial-gradient(700px 700px at 50% 115%, rgba(120,160,255,.20), transparent 60%),
+      linear-gradient(160deg,#0a2145 0%,#143d78 45%,#1b5aa0 100%);
+  }
+
+  /* Tarjetas: vidrio esmerilado, pero bien opacas para no perder lectura */
+  .card{
+    background:rgba(255,255,255,.90);
+    -webkit-backdrop-filter:blur(20px) saturate(170%);
+    backdrop-filter:blur(20px) saturate(170%);
+    border:1px solid rgba(255,255,255,.65);
+    box-shadow:0 10px 34px rgba(6,24,52,.30), inset 0 1px 0 rgba(255,255,255,.9);
+  }
+
+  /* Cabecera con reflejo diagonal */
+  .topbar{
+    background:linear-gradient(135deg,var(--brand-dark) 0%,var(--brand) 55%,var(--brand-mid) 100%);
+    border:1px solid rgba(255,255,255,.24);
+    box-shadow:0 10px 30px rgba(6,24,52,.38), inset 0 1px 0 rgba(255,255,255,.28);
+    position:relative;overflow:hidden;
+  }
+  .topbar::after{
+    content:'';position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(115deg,rgba(255,255,255,.30) 0%,rgba(255,255,255,.07) 36%,transparent 58%);
+  }
+  .topbar>*,.topbar-left>*{position:relative;z-index:1}
+  .btn-inicio{-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+    box-shadow:0 2px 10px rgba(6,24,52,.22), inset 0 1px 0 rgba(255,255,255,.35)}
+
+  /* Banner del logo */
+  .logo-banner{
+    background:rgba(255,255,255,.80);
+    -webkit-backdrop-filter:blur(18px) saturate(170%);
+    backdrop-filter:blur(18px) saturate(170%);
+    border-bottom:2px solid rgba(255,255,255,.55);
+    box-shadow:0 6px 26px rgba(6,24,52,.22);
+  }
+
+  /* Barra de acciones: pastilla de vidrio */
+  .action-bar{
+    background:rgba(255,255,255,.74);
+    -webkit-backdrop-filter:blur(16px) saturate(170%);
+    backdrop-filter:blur(16px) saturate(170%);
+    border:1px solid rgba(255,255,255,.7);
+    border-bottom:1px solid rgba(255,255,255,.7);
+    border-radius:12px;padding:8px 10px;
+    box-shadow:0 8px 26px rgba(6,24,52,.20), inset 0 1px 0 rgba(255,255,255,.85);
+  }
+  .action-bar button{
+    border:1px solid rgba(255,255,255,.55);
+    box-shadow:0 2px 9px rgba(6,24,52,.14), inset 0 1px 0 rgba(255,255,255,.65);
+  }
+
+  /* Modales flotando sobre el vidrio */
+  .modal-overlay{background:rgba(8,26,54,.55);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+  .modal-box,.hist-box{
+    border:1px solid rgba(255,255,255,.7);
+    box-shadow:0 20px 60px rgba(6,24,52,.42), inset 0 1px 0 rgba(255,255,255,.9);
+  }
+}
+
 </style>
 
-</head><body><input type="file" id="logoInput" class="img-input" accept="image/*">
+</head><body>
+<!-- ═══ ICONOS SVG INCRUSTADOS (V2) ═══
+     Reemplazan a la fuente Tabler, que nunca estuvo enlazada.
+     Se usan con <svg class="ic"><use href="#ic-nombre"></use></svg>
+     No dependen de internet ni de ninguna descarga externa. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+  <symbol id="ic-history" viewBox="0 0 24 24">
+    <path d="M3 12a9 9 0 1 0 2.6-6.4"/><path d="M3 3v5h5"/><path d="M12 7v5.5l3.5 2"/></symbol>
+  <symbol id="ic-report-analytics" viewBox="0 0 24 24">
+    <path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/>
+    <path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M9 17v-3.5"/><path d="M12 17v-6"/><path d="M15 17v-2.5"/></symbol>
+  <symbol id="ic-package" viewBox="0 0 24 24">
+    <path d="M12 3 3 7.5v9L12 21l9-4.5v-9L12 3z"/><path d="M3 7.5 12 12l9-4.5"/>
+    <path d="M12 12v9"/><path d="m7.5 5.2 9 4.5"/></symbol>
+  <symbol id="ic-settings" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="3"/>
+    <path d="M19.1 14.6a1.6 1.6 0 0 0 .3 1.8l.1.1a1.9 1.9 0 1 1-2.7 2.7l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5v.2a1.9 1.9 0 1 1-3.8 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a1.9 1.9 0 1 1-2.7-2.7l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a1.9 1.9 0 1 1 0-3.8h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a1.9 1.9 0 1 1 2.7-2.7l.1.1a1.6 1.6 0 0 0 1.8.3h.1a1.6 1.6 0 0 0 1-1.5V3a1.9 1.9 0 1 1 3.8 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a1.9 1.9 0 1 1 2.7 2.7l-.1.1a1.6 1.6 0 0 0-.3 1.8v.1a1.6 1.6 0 0 0 1.5 1h.2a1.9 1.9 0 1 1 0 3.8h-.1a1.6 1.6 0 0 0-1.5 1z"/></symbol>
+  <symbol id="ic-device-floppy" viewBox="0 0 24 24">
+    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+    <path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></symbol>
+  <symbol id="ic-calendar-plus" viewBox="0 0 24 24">
+    <path d="M13 21H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v7"/>
+    <path d="M3 10h18"/><path d="M8 2v4"/><path d="M16 2v4"/><path d="M16 19h6"/><path d="M19 16v6"/></symbol>
+  <symbol id="ic-brand-whatsapp" viewBox="0 0 24 24">
+    <path d="M3 21l1.7-3.9a8.6 8.6 0 1 1 3.3 2.8L3 21z"/>
+    <path d="M9.5 9.2c0 .9.3 1.8.9 2.6.7.9 1.6 1.5 2.6 1.8l1-.9 1.6.9c-.2.7-.9 1.2-1.7 1.2-2.9 0-5.7-2.9-5.7-5.8 0-.8.5-1.5 1.2-1.7l.9 1.6-.8.3z"/></symbol>
+  <symbol id="ic-printer" viewBox="0 0 24 24">
+    <path d="M7 9V3h10v6"/><path d="M7 18H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2"/>
+    <path d="M7 14h10v7H7z"/></symbol>
+  <symbol id="ic-plus" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></symbol>
+  <symbol id="ic-trash" viewBox="0 0 24 24">
+    <path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M10 11.5v6"/><path d="M14 11.5v6"/>
+    <path d="M5.5 7l1 12.2A2 2 0 0 0 8.5 21h7a2 2 0 0 0 2-1.8L18.5 7"/></symbol>
+  <symbol id="ic-photo-plus" viewBox="0 0 24 24">
+    <path d="M12.5 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v7.5"/>
+    <path d="M15 8.5h.01"/><path d="m3.5 16.5 3.5-3.5a2.6 2.6 0 0 1 3.6 0l2.4 2.4"/>
+    <path d="M16 19h6"/><path d="M19 16v6"/></symbol>
+  <symbol id="ic-home" viewBox="0 0 24 24">
+    <path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h3.5v-5.5h5V21H18a1 1 0 0 0 1-1V9.5"/></symbol>
+</defs></svg>
+<input type="file" id="logoInput" class="img-input" accept="image/*">
 <input type="file" id="refImgInput" class="img-input" accept="image/*" multiple="">
 
 <!-- ===== MODAL ACTIVACIÓN PRO ===== -->
@@ -563,6 +695,7 @@ input, textarea, select, [contenteditable]{
 <!-- TOPBAR -->
 <div class="topbar" id="mainTopbar">
   <div class="topbar-left">
+    <button class="btn-inicio" id="inicioBtn" type="button" title="Volver a la pantalla de inicio" aria-label="Volver a inicio"><svg class="ic" aria-hidden="true"><use href="#ic-home"></use></svg></button>
     <div class="logo-area" id="logoArea" title="Sistema de Cotizaciones">
       <img id="logoImg" src="data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAEAAQADASIAAhEBAxEB/8QAHQABAAICAwEBAAAAAAAAAAAAAAYIBQcDBAkBAv/EAFAQAAEDAwIDBAUFCwcKBwAAAAEAAgMEBREGBxIhMQgTQWEUIlFxgRUyN3WRCSNCUlVigqGxs9IWFxgzQ5KUOGdyc3aipbK05DRTVmPB0eH/xAAbAQEBAAMBAQEAAAAAAAAAAAAABQMEBgECB//EADIRAAIBAgMGBAUEAwEAAAAAAAABAgMEBREhEhMxQWHwUXGRsTKBocHRFCNC4RUi8WL/2gAMAwEAAhEDEQA/ALloiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIsVqnUNn0xZ5bte61lLSx8su5l7vBrR1c446BVr17vfqnU1Y616TintdJK7gjELeKrm+I+bn2N5+ZVGxwyvevOCyiub4Gld39G1X+7zfguJZHUOqdOaebm93ugoHYyGTTAPcPJvU/AKF1u+u3NPLwR3Spqva6Gjkx/vALTml9itb6hd6ffJ4rSyY8bnVbjLUOz4lg8f9IgrYFu7N+mY4sXG/wB3qJPxoBHEPsLX/tVF2WFW+lWs5P8A88Pv7mirrEK2tOmorr2vYz1Pvzt3JIGvrq6EHq59G8gf3clS3TuvNHahe2O0ait9RK75sJk7uU+5jsO/UteVnZy0dI0+i3a+QPPTikie0fDgB/WoRqns6ahoo3zafu1LdQOYhlb3Eh8gSS0/EtXitsIraQquL68Pb7h3GJUtZU1JdO/sWeRVE03uPuHttdRar1HV1EEeOOguXFkNz1jeeYHXBGW+RVkNudfaf1zbjUWmcsqo2g1FHLgSxfDxb7HDl7jyWlfYTXtFt/FDxRt2mJUrl7HCXgyVoiKWUAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCxWrdQW3S+n6q93Wbu6anbkgfOe7wa0eLieQWVVVO0fq6q1XrmPSlpL5qS3zCBkcZz39U48LuXjgngHnxe1UcMsXe11B6RWrfQ0cQu1a0dpcXovMwlbVau3s182GFnCxue6iye4oYc83E+3pk9XHAHgBZTbTbjT2hqFraGAVFxc3E9dK0d48+Ib+K3yHxz1TaLQ9HoXSkNAxrH3CcCSunHV8mPmg/it6D4nqSpktnE8T3v7FDSmtElzMFhYbv96trUf0CIiilUIiIDCax0rYtW2p1uvtDHUxc+7fjEkR/GY7q0/t8chVY15o/U+0Wq6e62qtn9EMhNFXxjGfbHIOmcdQeTh8QLhLGaosVt1JYqqy3WATUtSzhcPFp8HNPg4HmCquG4pO0lsy1g+K/HepOvsPjcx2o6TXBmA2k15Q6902K2INgr6fEdbTZz3b/Bw/NdgkH3jwUyVO7DWXXZzd19PWOe6mhl7mqwOVRSuOQ8D24w4eYx7VcGCWKeCOeGRskUjQ9j2nIc0jIIPsXuLWMbaop0tYS1X4GG3cq8HGp8cdGftERSSiEREAREQBERAEREAREQBERAEREARF1LrdLbaqf0m6XCkoYf/MqJmxt+1xC9ScnkjxtJZs7aKC127+29G8sm1TTOIOPvMMso+1jSFzW3dXby4PDKfVdAwnp3/FAPtkAWy7K5SzdOWXkzArug3ltrPzRltw76NNaIu98yA+lpnOiz0Mh9Vg+Li1Vx7LWnflzX9RfaxplitUfe5dzzPJkNJ+Ae73gLZXaku8DtqIRRVUM8VdcIouKKQODmhr38iOvNjf1L52Sbe2m27rK4gd5WXB/P8xjWgD7eL7VZts7bCqlRfFN5fLvMl18rjEacHwis+/objREXOFwIiIAiIgPkj2RsdJI5rGNBLnOOAAPErhoayjr6cVNDVwVUDjgSQyB7T8RyUU3s0dVa/wBrL9pChuXybU3KBrI6gglrS17X8Lsc+F3DwnHg49VRe9dn/f3bCR14sDKufuubqnTde90gx+YOGVw9zT5oC0na500yosdu1VBGO/pJPRaggc3RPyWk+52R+mo9t1vxSab0Rb7HcrRWV1VRMdE2VkjWtMYPqDnz5Dl06ALT23Hair623z6J3nppLtZasdxLcqeIR1dMQchz2tGHhpAPIBwxn1zyVn9G7ObWVNopbrQxy3+jqohLT1Uta5zJGEZDh3fCD9i6C1xC0lZqhdxb2Xpl/wBXUi3Flcq5da2aWa1zIpJ2l4xJiPRj3M9rrlg/Z3R/as1Ze0ZpWpe1l0tFzoCT89nDMxvvwQfsBU3O1e3hBB0pb+fsaf8A7Uev+wugbjG70KmrLTKejqaoc4Z82ycXLyGF6q2DT0dOUeuf9v2DpYpDVTi+mX9E40rq7TWqYDLYbxS1uBl0bHYkYPa5hw4fELOKpetNnNaaJm+WLFUy3KmpzxtqaHijqIceJYDke9pPnhS7Z/faSSeGya3kZ65DIbmAG4PgJR0x+ePj4lfFxgylTdazntx8Oa7+T6H1RxRxnurqOxL6FhkXxjmvY17HBzXDIIOQR7V9UEsBERAEREAREQBERAF+KiaGmp5KioljhhiaXySSODWsaBkkk8gB7V+1V3tCbkVWpr07R2nZJXW2GURTdzzNZNnHCMcy0HkB4nnz5Lfw+wne1diOi5vwRp3t5C0p7ctXyXiZndTf2XvZrVocNa1pLX3KVmS7/VNPQfnO+A8VC7FtfuTr6o+V7mZYWTet6XdZnBzwfxW83Y9nIDphbc2U2codN00F71JBFWXt4D2QvAdHR+OAOjnj8bw8PadwqtVxShY/tWMV1k9c+/ToTaeH1rz9y7k+kVy79epX239mqAMabhqyRz/wmwUYAHuJcc/YuG6dmpwjLrZqsOf4MqKPAP6TXH9isQi0Vj1/nnvPovwbf+Hs8stj6v8AJSrWm1mttKNe+utbqqjByamiJli5eJ5cTfe4Dqp9JujVbHdnrTF4q9LSXSS4XCaAU76v0VzGuMjw/PdvzkN6YHIg5Vl1Vn7pH9FmnPrsfuJV9X2M1b2gqVSKzTzzX4PLTC6drWdSDfDLIjP9Of8AzXf8f/7dP6c/+a7/AI//ANuqj6QtTb7qyz2N8xgbca6CkMobxFgkkazix44znCt5X9huEx5odyZGvAPKazgh3s5iYY8fAqMVDL6c7bulamoYzUGirvbY3cjJSVUdVwnzDhHy93PyVjdvNd6T3AsnyxpK9U9zpQQ2QMy2SFxGeF7DhzT7xz8F5v76bFa02kMFVevRa+0VMvdQXCjcSzjxkMe0gFjiAT4g4OCcFRLbfWuotEX41+n79XWY1UZpqualAc4wu5Ow08i4dWnkQQCCEB6b7ibtaF0JUx0F6vHe3aXAhtdDE6prJCemImZIyPF2AcdVofVnbWtNqulRQW/bm8yy00roZY7lVto5Y3tJDmuYGSFrgRgg9Ftuw2jaPY7RjtSy1lJSR1TBJPe65/f1txe4cWePBfIXfO4GDHUgdV5ybr3OC9bpasvNNHPFBX3usqYmTx8EjWvne4BzT81wB5jwKAvdt3v9r7XGnP5S2HZGpr7O2Z8D5aTUcD5Wvbw5b3T42OPJwPJS/T2/Oiay8RWLUsN30TeZTiOj1HRmk7w/myHMZByMesM5GAtEdjTU25Vi2gkGl9tYNVWf5VndJNHeoqWoa/gi4gI5G4cAMEYPPy8dzR7o7a66m/kJuLp6q0/cqrk20apoBE2Y9A6KQ5Y7mfVIIcT0QGL7T/Z8sm5tmqL/AKfp6eh1fFHxxTswyOvA/s5fAkjk1/UcskjporsNbn3fSWv37UaibUiguFRJHTQytPFQ1rc8TcHmGu4SCPBwB5ZcTYzssxyW+2a403TzSPstg1bWWy0xyTOkdTwMbG7ug5xJLWl/LJ8SoP2qLlozZvU9o3MtWgLdcdZXWeSOOrnlkZDFwNHHKY2nhdIQ8DiwD1OfaBZtFC9j9djcrbCz6yFvdb3VzZBJTl3EGvjkdG7hdgZaSwkH4dQVNEAWkN+Nnqe701RqXStI2G5sBkqqSJuG1Q6lzQOknkPne/ru9FtWl5VtKiqU3/fma9zbU7mm4TX9FdezNuVKyoi0Pfagujd6tsmeebCP7En2fi+zp7ALFKrHaY0cdMatp9VWcGnprjLxu7v1e5qW8yRjpxfOHmHeSsBtZqhmsNDW69+qKiRnd1LR+DM3k/l4AkZHkQqmL0KdSEb2iv8AWfFeD771J+GVpwlK1qvWPDqiToiKCWAiIgCIiAIiIDX+/urH6T27qpqWQsr64+iUzgebS4HiePc0HB9uFqzspaJjra6o1ncIeKOkeYKBrhyMuPXf+iCAPMnxC4u2DdHS6lstma/LKakdUOaD+FI/h5/CP9fmt57W2aOwbeWO1sZwOjo2PlH/ALjxxv8A95xXRuX6PCko/FVevl37shqP6rEXtfDTX179iSoiLnC4EREAVWfukf0Wac+ux+4lVplVn7pH9FmnPrsfuJUBTPaf6U9JfXdF+/YvXJeO+m7pNY9RW2908ccs1vq4qqNkmeFzo3hwBxzxkKyNV22NxnwltPpnSsUh6OfFO8D4d6EBYrtxy0EfZs1E2tLe8klpG0oPUy+kRnl58IefcCvNRT3dvd3XW6NVBJqy6tlpqZxdT0dPGIoIiepDR1PhxOJOOWV1dutBXvUtyslU+11IsNbfKO0yVpHDGZJ5A0MaSRxOxxE46cs4yEBeDs27f1mo7PYNzdx4m1txjt8EOnbdKCYLZSMYGxyhh5GaQAPLj0yMY6Cj++30368/2kuP/UyL1ihijghZDCxsccbQ1jGjAaAMAAexeTu+30368/2kuP8A1MiAuz9zz+gWf67qP3cS2tuDp6z6zpbhYtT01ontETI8trqfi4XPB9Zr+Npjdy5FpB81qn7nn9As/wBd1H7uJbiv9RNTTXaSB/A8upGcWB0JIPgf2H3KVi1bc0lJt5ZvPJtcIyfJp8V4o27OG3Nrnp7pdSL6Htdv0FYpbDpFlHDa4Z3zyPZwycb5Dze976guJPIZcc4AHgshrax2bWemnQ6ibYNQ0tMW1Hos1I15id0yHNkPCcEjI8xzC4aO53F8J7yve3ikcwDiDc4JwMdwc9P/AMC7AuFT6JX01TLJK2SBvd/ey71uLmMiNvguRo4rGSb3ktU8s29Hk2v5eXHMsztGmlsrRrkteGfL8E1s9tt9ntdNa7VRU9DQ0sYjgp4IwyONo6AAcgu2uGiqoKymZU00gkifnhcARnBwevmCuZfoMZRnFSi80znGnF5MIiL6PCEb6WJl/wBrrzT8AdNTQmshOOYfF63LzLQ5v6S1l2PLw4x33T8jyWtMdZC3PQn1Hn9Ua3/VwMqaWamkGWSscx3uIwVVbslyPZudUMacCS1ytcPaOOM/tC6Cwe9w24pv+OT79CLeLd39Gouea79S1yIi58tBERAEREAREQFT+1j9KMX1bD/zPVro+ARtEfDwYHDw9MeGFWntg2t0WpbLeWs9SppHU7iBy4o38XPzxJ+ryW9ts7wy/aAsd0a/idNRxiQ5z98aOF4/vAroMSW3h9tNcFmvn2mRbF7F7Xg+LyffqSJERc+WgiIgCqz90j+izTn12P3EqtMqs/dI/os059dj9xKgKgbH6atusN2dOaYvHfegXGsEE/cv4X8JB6Hng8l3N99rr3tRrmawXMGejkzLbq4NwyqhzyPk4dHN8D7QQT3uyv8A5Q2ivrJv/K5eiW922dj3U0NUacvDe6mH32hrGty+lmA5PHtB6Ob4gnocEAeUC74vV5FNT0wu1eIKZ7XwRekP4YnN5tc0Zw0jwI6LIbg6QvuhNXV2l9RUhp6+jfwuxzZI0/NkYfFrhzB+3ByFZrsh3zazXtkk2y1vonSrL+aZ8VDcRaoI56yLhII7zh4hO0ZIcOZAz1BJArB/KzVP/qW8/wCOl/iWInmlqJ5J55XyyyOL3ve4uc5xOSST1JPir8bR6d0DpO/DaTdHQmkDfIC75DvVXZqbgvlNxep67m8525DXNJyeXU5JpjvPSUtBvDrShoaaGlpKbUFfDBBDGGRxMbUPDWNaOTWgAAAcgAgLv/c8/oFn+u6j93Etvanj7w3gEsDWupHO4nBowHHPMkD9YWofuef0Cz/XdR+7iWy91tVWHQ1FVXfUN/obfTVbWNjhcZPSJnszhsTYzxOJz4fHA5qTjFvOvQ2IrPjw6xkvdo3LKoqdTNvLh7p/Yx1spi18Msb42cM7w6Rr43hoLJCAcScsgHrgeakDrXwwshFbEY6dz3sHCzkRwEn+s/OHX2eYzgdE36n1Zpem1DYZJ62hFbJFNCWzCpglY2SNzXse7LCC7mORwQVKpLjO4uItt3GeLH3l/jw/n/mn7fM55Szw6lbQlTrpp6ePTw05L5or1rmdWSlTay+R39HsfHp+FkueMSTZyMZ++v8ABZddOzSzT26OWenlp3uc893I4lzRxHGc+WDjwXcXb2MFC1pxi80or26kK4k5VZN+L9wiItownVvFYy32msuEhAZTQPmdn2NaT/8ACrB2R6V8u41bUjPdwWx+T5ukjAH7fsW3u0lqNli2yrKVjwKq6kUcQzz4TzkOPZwgj3uCi/ZDsT6XTl21BKwg107YISfFkYOSPIucR+iugs1uMLrVX/NpLv5v0It097iFKmv45t9+hvNERc+WgiIgCIiAIiIDXvaC0rJqrbmqjpIjJXUDhWU7QMl/CCHNHty0uwPEgLW3ZP1rHBJUaKr5eHvnmot5cersevH9g4h+krFqrG/u3lZo/UI1fpxkkVslnExdByNFPnIxjo0nm0+B5cuWehwqrTuaErGq8s9Yvr39yLiNOdCrG7prPLRrp39i06LVOzG71t1bSwWi9Sx0V/a0Nw71Y6rH4TD4O9rfsyM42so1zbVbao6dVZMqULinXgp03mgiItczBVZ+6R/RZpz67H7iVWmUB3t2o07u3YKKy6krbrSU9HVelRut8sbHl/A5uCXseMYcfAIDzy7K/wDlDaK+sm/8rl6lrQegOyjt3orWVr1Varzqmatts4nhjqaqB0TnAEYcGwgkc/Ahb8QGne1HstQ7taR46QRU2p7cxzrbVO5CQdTBIfxHHofwTz6cQPmzVQXjTWoX087Ku13e21OHDJjmp5mO9o5tcCOq9iFp7eTs6bfbpaji1DenXa23JsXdTTWyaOP0kDHCZA+N4JaBgEYOORzgYAhmxmvdHdpDbx+j9xLbRVmorewOqInDgdM0YAqoXNwWO54cGkYP5rgFSDda2QWTdHVlmppaiaCgvVZSxyVEnHK9sc72gvd+E4gcz4lXhoOxrtvQVkdZQ6p11S1MR4o5obhTsew+0OEGQVHdV9im2XW61FfQ7kXeOSoldLLJcqJtZNI5xJc57w+PicSclxHM59qAw3Y00juDqPaGc2Pc+bS1jN1mZJSUlphlqHv4I+JwnecsyC3GAei3vYtsNtdtny621HXyXK6wAOm1Fqau7+dmOnC5+GsPs4QD4ZKie32w+4ehtNM0zpze11utImfNJHT6XgEr3Pxk94+R5B5D4AKUWfYTSZukN41pdL9r25Qu44n6hrDPBC7x4IABGB5EOCA/PZak9O0lqm/wMk+Tr5rC63K2yvaW9/TSTepIAeYB4T1APJbcX5hjjhiZFFG2ONjQ1jGjAaByAA8Av0gCIiAL8TyxU8Ek88jIoo2l73vOGtaBkknwAC4bnX0VsoZa641cNJSxDiklmeGtaPMlVh3r3dqNYPdpnSzJ2WmR4Y+QMPe1rs8mhvUMzjA6nlnHRUMPw6re1NmOi5vkjSvb6nawzlx5LxMRufqGv3X3PpbZZGOkpWyeiW5h6EZy+U+wHHEfY1oz0VqtJWSl05pq32Oj/qaOBsQdjHGfwnHzJyT5la67Pu2J0fbze71E03yrjwGHn6LGefB/pHlk/AeOdsraxe8pz2bah8EPq/Hvqa+G2047Vet8cvogiIopVCIiAIiIAiIgC4q2mp62klpKuCOenmYWSxSNDmvaRggg9QuVF6nlqg1mVu3S2ErKWeW7aIJqKcnjdb3vxJH/AKtx+cPI8/MqMab3g3C0ZP8AJV3a+tZB6rqa6RObNGPZxcnf3sqzkusdIxXGvtsuqbGytt0Lp66mdcIhLSxNHE58jeLLGgcyXYAC7F3tdgv9uY66UNuuVGWd4x88bJGcJGeJpOcDHPIV2jje1BUruCqLx59+hHq4Tsz3ltPYf0NL0XaUt7oR6ZpWqjk8RFVte0/a0Lv/ANJDS35CvP2RfxKWVezG2tUXPOnGRud+FDVTNA9wD8fqXV/mL23/ACRUf42X+Jfe+waWu7ku/M+d1ii/nF9+RHf6SGlvyFefsi/iUj273k07rTUTbHR0FxpKqSNz4zO1nC/hGSMtccHGT8F8/mL23/JFR/jZf4lnNG7a6N0lcXXGyWnuqwsLBNJM+RzWnqBxEge8c1hr1MKdOSpQltcvP1MtGGIqa3ko7PPvIl6LrXSvoLVb57jc62moaKnYXzVFRK2OONo6uc5xAA8yuyohVCKO6p11ozStZT0WpdVWWz1NSMwxVlZHE54zjiw4jlnx6KQxvZJG2SN7XscAWuacgg9CCgPqL5I9kcbpJHtYxoJc5xwAB1JKx8l+scdHca2S9W5lLbHujuEzqpgZSPa0Oc2V2cMIa5pIdjAIPigMii+Mc17GvY4Oa4ZBByCPasbqPUWn9N0jKzUV9tdnpnu4GzV9XHAxzvYHPIBPkgIRuJvJp3ReonWOsoLjV1UcbXyGBrOFnEMgZc4ZOMH4qOf0kNLfkK8/ZF/EpzqLQGgtcyx32ut8FwknhaI6ymqngSM/BILHcLuXjz5LEfzF7b/kio/xsv8AErdCphSppVYS2ufn6kqtDEXN7uUdnl3kRuXtIaaDCYrBd3O8A4xtH28RUdv3aSuMsbo7HpumpXEYEtVOZfjwtDf2lbIh2O21Y/idY5pRj5rq2bH6nBZ2z7baEtLxJRaWtoe35r5Yu+cPcX5IWZXOD09Y0pN9X/f2MW4xOekqiS6f8KyxUW6G7lwZLL6ZW0wd6ssv3mjh93INyPIF3vW+9ptorLonguNU5tzveP8AxLm4ZDnqI2+Hs4jzPlnC2DX19utkUBrq2loo5po6aEzStjD5XnhZG3JGXOJADRzJ5BfbpX0Fqt89xudbTUNFTsL5qiolbHHG0dXOc4gAeZWteYzVrw3VNKEPBGe1wunRlvJval4s7KIijlMIiIAiIgCIiAIiIAiIgKnatsOo6ebUFHprR2opKngvtQYayzBxoZJ6apInorjE1rpnSPewNiPeOxJwnhLAR1bjZdzbyNS2Crj1/Xen2i4sDXyVVJDE4U73U8RyXU8rHPbGwCJzJCH4lBHeBW7RAVEqJN3Kaqt1Jpi063bFHR0LNOvrKyuhjhcAPSBWROge1/33vBioezEYZwcsFSx2l9eVl0ZXyX7cOn+U9f19vrIIq+obFFZ+OofG+Nv9izMcQbK3HJ+A7BaFY9EBWJv84Md3fbtWP3PlsNudX0VlqbI2f0qomjrZWwy1TowC9pg7ngfIO6dhxdnOS2Wk3Qj1/pR+o49eVEc1vgZXR3AVMVPAPQvWe8u4oZMzDmHd3UB56lnI2dRAVc7RFv1ddoNf26votxK6sqGsZpunscM8trkpO7j4hK2P1DJx97xd563zeDwWTZU7wO32MZt1/ZENRkekGuqPks2bixjuRB6Nx93z4u973vPDHJWQRAV+1hDXae1XraC4t1JSVGoa+Gst10s9gZdXV9MKZkXye8PikZHwva5wDw0HOeLBcFAfRd/rLJbLRJbry+509HQtsklvqZKe3U/IGWOogpqd1M/hJMbu9ewBrQWe02/RAVP1lZNxtQUm5NkdT65uDKu31z4BO+pp4mvbUtdDC1hc6GXMfE1vozgHMyJGcRGP2606hr33Cj1RbNyanb2qu1Q8wU8FS+4y4o6D0UzNIM7oxwz5Lc/fWnj5hWtRAVUgtm8k2ndVX243DXkV6s1moaiw0kU0nBVSd9UkNlij9SabuWwCVgB9ZxyM8JGz9xKc2feWj1fe9KXTUliNhNvpvQLaa99BVd858jjC0FwEjCxvG0H+rwcArbiICs1dRXiirYjFpDcTSWjaqnqqq2W3TE0zqltwfO4l9RHET3DXs4HNhP3ppLuLByF1Z7Fu/VWfUd8ut41vS6kpZ7FT01PbqmUUsglp6SOudHCAY34L5nOc0FrHsc4YwVaNEBV/Xke6lhvNdp23Qa2vWjKC7EtqY7hWR10rJKOB8bRVQwy1EkTZnTglrTzAa5wAwuzbbRvTdKCWvrLhqSlv1Bopktvp21b46SevNTWCMTcmsknEHccTXAAuLS8Yxiy6ICq+q4NwJ9JVLduodz5Z219qfCNTNkLhVtny9ze8++d0AGGQ/wBTjpyysJrG3ayu2mK222ai3ar46jSlay6019iqpI5K/ip+ERNeCC7+swGepj5n4SuGiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiID/9k=" alt="Logo RICCHARY">
     </div>
@@ -581,6 +714,16 @@ input, textarea, select, [contenteditable]{
     <div class="color-btn" style="background:#BF360C" data-brand="#BF360C" data-dark="#870000" data-light="#FBE9E7" title="Rojo"></div>
     <div class="color-btn" style="background:#37474F" data-brand="#37474F" data-dark="#263238" data-light="#ECEFF1" title="Gris"></div>
   </div>
+</div>
+
+<!-- ACCIONES -->
+<div class="action-bar">
+  <button class="hist-btn" id="histBtn" style="position:relative"><svg class="ic" aria-hidden="true"><use href="#ic-history"></use></svg><span class="lbl"> Historial</span><span class="hist-save-badge" id="histSaveBadge">✓ Guardado</span></button>
+  <button class="btn btn-outline" id="cfgBtn" title="Configuración"><svg class="ic" aria-hidden="true"><use href="#ic-settings"></use></svg><span class="lbl"> Configuración</span></button>
+  <button class="hist-btn" id="saveBtn" style="background:var(--brand);color:#fff;border-color:var(--brand)" title="Guardar cambios de esta cotización"><svg class="ic" aria-hidden="true"><use href="#ic-device-floppy"></use></svg> Guardar</button>
+  <button class="btn btn-agenda" id="agendaBtn"><svg class="ic" aria-hidden="true"><use href="#ic-calendar-plus"></use></svg> Agendar Pedido</button>
+  <button class="btn" id="waBtn" style="background:#25D366;color:#fff;border-color:#25D366"><svg class="ic" aria-hidden="true"><use href="#ic-brand-whatsapp"></use></svg> WhatsApp</button>
+  <button class="btn btn-primary" id="printBtn"><svg class="ic" aria-hidden="true"><use href="#ic-printer"></use></svg> Imprimir / PDF</button>
 </div>
 
 <!-- DATOS DEL CLIENTE -->
@@ -627,7 +770,7 @@ input, textarea, select, [contenteditable]{
     <tbody id="itemsBody"></tbody>
   </table>
   <button class="add-row-btn" id="addRowBtn">
-    <i class="ti ti-plus" aria-hidden="true"></i> Agregar ítem
+    <svg class="ic" aria-hidden="true"><use href="#ic-plus"></use></svg> Agregar ítem
   </button>
   <div class="totals-block">
     <table class="totals-table">
@@ -666,7 +809,7 @@ input, textarea, select, [contenteditable]{
   <div class="section-title">Imágenes Referenciales del Producto</div>
   <div class="img-grid" id="imgGrid">
     <div class="add-img-slot" id="addImgBtn">
-      <i class="ti ti-photo-plus" style="font-size:22px" aria-hidden="true"></i>
+      <svg class="ic" aria-hidden="true"><use href="#ic-photo-plus"></use></svg>
       Agregar imagen
     </div>
   </div>
@@ -692,7 +835,7 @@ Este documento es de carácter contrato cliente-ofertador, que firmado constituy
           <canvas id="sigCanvas1" width="300" height="80"></canvas>
         </div>
         <div class="sig-controls">
-          <button class="sig-clear-btn" onclick="clearSig(1)"><i class="ti ti-trash" aria-hidden="true"></i> Limpiar</button>
+          <button class="sig-clear-btn" onclick="clearSig(1)"><svg class="ic" aria-hidden="true"><use href="#ic-trash"></use></svg> Limpiar</button>
         </div>
         <div class="sig-line" id="sigLine1">Firma del Representante</div>
       </div>
@@ -702,7 +845,7 @@ Este documento es de carácter contrato cliente-ofertador, que firmado constituy
           <canvas id="sigCanvas2" width="300" height="80"></canvas>
         </div>
         <div class="sig-controls">
-          <button class="sig-clear-btn" onclick="clearSig(2)"><i class="ti ti-trash" aria-hidden="true"></i> Limpiar</button>
+          <button class="sig-clear-btn" onclick="clearSig(2)"><svg class="ic" aria-hidden="true"><use href="#ic-trash"></use></svg> Limpiar</button>
         </div>
         <div class="sig-line" id="sigLine2" style="color:var(--muted)">Firma del Cliente</div>
       </div>
@@ -710,15 +853,7 @@ Este documento es de carácter contrato cliente-ofertador, que firmado constituy
   </div>
 </div>
 
-<!-- ACCIONES -->
-<div class="action-bar">
-  <button class="hist-btn" id="histBtn" style="position:relative"><i class="ti ti-history" aria-hidden="true"></i> Historial<span class="hist-save-badge" id="histSaveBadge">✓ Guardado</span></button>
-  <button class="btn btn-outline" id="cfgBtn" title="Configuración"><i class="ti ti-settings" aria-hidden="true"></i> Configuración</button>
-  <button class="hist-btn" id="saveBtn" style="background:var(--brand);color:#fff;border-color:var(--brand)" title="Guardar cambios de esta cotización"><i class="ti ti-device-floppy" aria-hidden="true"></i> Guardar</button>
-  <button class="btn btn-agenda" id="agendaBtn"><i class="ti ti-calendar-plus" aria-hidden="true"></i> Agendar Pedido</button>
-  <button class="btn" id="waBtn" style="background:#25D366;color:#fff;border-color:#25D366"><i class="ti ti-brand-whatsapp" aria-hidden="true"></i> WhatsApp</button>
-  <button class="btn btn-primary" id="printBtn"><i class="ti ti-printer" aria-hidden="true"></i> Imprimir / PDF</button>
-</div>
+
 
 
 
@@ -901,7 +1036,7 @@ function calcTotals(){
 function addRow(item){
   const tb=document.getElementById('itemsBody');
   const tr=document.createElement('tr');tr.className='item-row';
-  tr.innerHTML=`<td><input class="qty-input" type="number" min="0" step="1" value="${item?item.qty:1}" style="width:52px;text-align:center;border:none;background:transparent;font-size:13px;color:var(--text)"></td><td><input type="text" value="${item?item.desc:''}" placeholder="Descripción" style="width:100%;border:none;background:transparent;font-size:13px;color:var(--text)"></td><td><input class="price-input" type="number" min="0" step="0.01" value="${item?item.price:0}" style="width:80px;text-align:right;border:none;background:transparent;font-size:13px;color:var(--text)"></td><td class="line-total" style="text-align:right;font-weight:600;font-variant-numeric:tabular-nums">$0.00</td><td><button class="del-btn" title="Eliminar"><i class="ti ti-trash" aria-hidden="true"></i></button></td>`;
+  tr.innerHTML=`<td><input class="qty-input" type="number" min="0" step="1" value="${item?item.qty:1}" style="width:52px;text-align:center;border:none;background:transparent;font-size:13px;color:var(--text)"></td><td><input type="text" value="${item?item.desc:''}" placeholder="Descripción" style="width:100%;border:none;background:transparent;font-size:13px;color:var(--text)"></td><td><input class="price-input" type="number" min="0" step="0.01" value="${item?item.price:0}" style="width:80px;text-align:right;border:none;background:transparent;font-size:13px;color:var(--text)"></td><td class="line-total" style="text-align:right;font-weight:600;font-variant-numeric:tabular-nums">$0.00</td><td><button class="del-btn" title="Eliminar"><svg class="ic" aria-hidden="true"><use href="#ic-trash"></use></svg></button></td>`;
   tr.querySelector('.del-btn').onclick=()=>{tr.remove();calcTotals()};
   tr.querySelectorAll('input').forEach(i=>i.addEventListener('input',calcTotals));
   tb.appendChild(tr);calcTotals();
@@ -2361,5 +2496,19 @@ if('serviceWorker' in navigator){
       .catch(err=>console.log('SW error:',err));
   });
 }
+</script>
+
+<script>
+/* V2 visual · botón Inicio: vuelve a la pantalla de bienvenida */
+window.addEventListener('load', function(){
+  var b=document.getElementById('inicioBtn');
+  if(!b) return;
+  b.onclick=function(){
+    document.querySelectorAll('.modal-overlay.open').forEach(function(m){ m.classList.remove('open'); });
+    var sp=document.getElementById('splashScreen');
+    if(sp) sp.classList.remove('hidden');
+    window.scrollTo(0,0);
+  };
+});
 </script>
 </body></html>
