@@ -228,8 +228,13 @@ input, textarea, select, [contenteditable]{
   .action-bar{flex-wrap:wrap;justify-content:center;gap:6px}
   .action-bar button{flex:1 1 auto;min-width:98px;justify-content:center;padding:7px 8px!important;font-size:12px!important}
   /* Los secundarios quedan solo con icono: se gana una fila entera */
-  #histBtn .lbl,#cfgBtn .lbl{display:none}
-  #histBtn,#cfgBtn{flex:0 0 auto!important;min-width:0!important;width:40px;padding:7px 0!important}
+  /* Nueva e Historial SI llevan texto (son los que confunden si van solo con icono) */
+  #nuevaBtn .lbl2,#histBtn .lbl2{display:inline}
+  #nuevaBtn,#histBtn{flex:1 1 auto!important;min-width:96px!important;padding:7px 8px!important}
+  /* Configuracion y Guardar quedan solo con icono: se gana espacio */
+  #cfgBtn .lbl,#saveBtn .lbl{display:none}
+.lbl2{display:inline}
+  #cfgBtn,#saveBtn{flex:0 0 auto!important;min-width:0!important;width:44px;padding:7px 0!important}
   #histBtn .ic,#cfgBtn .ic{width:18px;height:18px}
   .btn-inicio{width:38px;height:38px}
   .add-img-slot,.add-row-btn{white-space:normal}
@@ -452,7 +457,8 @@ input, textarea, select, [contenteditable]{
      Se usan con <svg class="ic"><use href="#ic-nombre"></use></svg>
      No dependen de internet ni de ninguna descarga externa. -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
-  <symbol id="ic-history" viewBox="0 0 24 24">
+  <symbol id="ic-file-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><path d="M12 11v6"/><path d="M9 14h6"/></symbol>
+<symbol id="ic-history" viewBox="0 0 24 24">
     <path d="M3 12a9 9 0 1 0 2.6-6.4"/><path d="M3 3v5h5"/><path d="M12 7v5.5l3.5 2"/></symbol>
   <symbol id="ic-report-analytics" viewBox="0 0 24 24">
     <path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/>
@@ -718,9 +724,10 @@ input, textarea, select, [contenteditable]{
 
 <!-- ACCIONES -->
 <div class="action-bar">
-  <button class="hist-btn" id="histBtn" style="position:relative"><svg class="ic" aria-hidden="true"><use href="#ic-history"></use></svg><span class="lbl"> Historial</span><span class="hist-save-badge" id="histSaveBadge">✓ Guardado</span></button>
+  <button class="hist-btn" id="nuevaBtn" title="Nueva cotización (limpia el formulario)"><svg class="ic" aria-hidden="true"><use href="#ic-file-plus"></use></svg><span class="lbl2"> Nueva</span></button>
+  <button class="hist-btn" id="histBtn" style="position:relative"><svg class="ic" aria-hidden="true"><use href="#ic-history"></use></svg><span class="lbl2"> Historial</span><span class="hist-save-badge" id="histSaveBadge">✓ Guardado</span></button>
   <button class="btn btn-outline" id="cfgBtn" title="Configuración"><svg class="ic" aria-hidden="true"><use href="#ic-settings"></use></svg><span class="lbl"> Configuración</span></button>
-  <button class="hist-btn" id="saveBtn" style="background:var(--brand);color:#fff;border-color:var(--brand)" title="Guardar cambios de esta cotización"><svg class="ic" aria-hidden="true"><use href="#ic-device-floppy"></use></svg> Guardar</button>
+  <button class="hist-btn" id="saveBtn" style="background:var(--brand);color:#fff;border-color:var(--brand)" title="Guardar cambios de esta cotización"><svg class="ic" aria-hidden="true"><use href="#ic-device-floppy"></use></svg><span class="lbl"> Guardar</span></button>
   <button class="btn btn-agenda" id="agendaBtn"><svg class="ic" aria-hidden="true"><use href="#ic-calendar-plus"></use></svg> Agendar Pedido</button>
   <button class="btn" id="waBtn" style="background:#25D366;color:#fff;border-color:#25D366"><svg class="ic" aria-hidden="true"><use href="#ic-brand-whatsapp"></use></svg> WhatsApp</button>
   <button class="btn btn-primary" id="printBtn"><svg class="ic" aria-hidden="true"><use href="#ic-printer"></use></svg> Imprimir / PDF</button>
@@ -2276,6 +2283,44 @@ document.getElementById('printBtn').onclick=()=>{ guardarCotizacion(); window.pr
   const fc = document.getElementById('fCedula');
   if(fc) fc.addEventListener('keydown', ev => { if(ev.key==='Enter'){ ev.preventDefault(); buscarRuc(); } });
 })();
+
+
+// ===== NUEVA COTIZACIÓN (limpia el formulario sin cerrar la app) =====
+window.nuevaCotizacion = function(){
+  const hayDatos = (document.getElementById('fCliente')?.value||'').trim()
+                || (document.getElementById('itemsBody')?.children.length||0) > 0;
+  if(hayDatos && !confirm('¿Empezar una cotización nueva?\n\nSe limpiará el formulario. Asegúrate de haber guardado la actual.')) return;
+
+  ['fCliente','fEmpresa','fTelefono','fDireccion','fCedula','fMail','fAtencion','fAbono']
+    .forEach(id=>{ const e=document.getElementById(id); if(e) e.value=''; });
+
+  const st=document.getElementById('rucStatus'); if(st) st.style.display='none';
+  const iv=document.getElementById('ivaSel'); if(iv) iv.value='0';
+  const fe=document.getElementById('fFecha');
+  if(fe) fe.value = new Date().toISOString().slice(0,10);
+
+  // Ítems en blanco
+  const tb=document.getElementById('itemsBody'); if(tb) tb.innerHTML='';
+  if(typeof addRow==='function') addRow();
+  if(typeof calcTotals==='function') calcTotals();
+
+  // Estado y numeración: siguiente orden libre
+  try{ estadoActual = 'Cotizado'; }catch(e){}
+  const dO=document.getElementById('docOrden');
+  if(dO && typeof getNextOrden==='function'){
+    const n = getNextOrden();
+    dO.value = n;
+    dO.setAttribute('data-num', n);
+  }
+  if(window.marcarBotonFacturado) setTimeout(window.marcarBotonFacturado, 50);
+
+  window.scrollTo(0,0);
+  if(typeof syncStatus==='function') syncStatus('📄 Nueva cotización lista', '#1565C0');
+};
+document.addEventListener('DOMContentLoaded', function(){
+  const b=document.getElementById('nuevaBtn');
+  if(b) b.onclick = window.nuevaCotizacion;
+});
 
 // ===== REINICIO LIMPIO v101 (se ejecuta una sola vez por dispositivo) =====
 (function(){
