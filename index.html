@@ -660,9 +660,10 @@ input, textarea, select, [contenteditable]{
         <h2>☁️ Activar sincronización (versión Pro)</h2>
         <ul class="onb-list">
           <li>1️⃣ En la app, toca <b>"Clic aquí para copiar la plantilla"</b> y haz una copia en tu Google Sheets</li>
-          <li>2️⃣ En tu copia: <b>Extensiones → Apps Script → Implementar → Nueva implementación</b></li>
-          <li>3️⃣ Copia la URL que termina en <code>/exec</code></li>
-          <li>4️⃣ Pégala en <b>⚙️ Configuración</b> de esta app y toca "Probar conexión"</li>
+          <li>2️⃣ En tu copia: <b>Extensiones → Apps Script → Implementar → Nueva implementación</b><br><span style="font-size:11px;opacity:.75">(en algunos equipos: <b>Desplegar → Nuevo despliegue</b>)</span></li>
+          <li>3️⃣ Acceso: <b>"Cualquier persona"</b> / <b>"Anyone"</b><br><span style="font-size:11px;opacity:.75">⚠️ NO "…con una cuenta de Google" ("Anyone with Google account")</span></li>
+          <li>4️⃣ Copia la URL que termina en <code>/exec</code></li>
+          <li>5️⃣ Pégala en <b>⚙️ Configuración</b> de esta app y toca "Probar conexión"</li>
         </ul>
         <p style="font-size:12px;color:#94a3b8;margin-top:10px">Guía visual completa en el manual PDF (opcional), enlazado en Configuración.</p>
       </div>
@@ -957,10 +958,24 @@ Este documento es de carácter contrato cliente-ofertador, que firmado constituy
           <b>1.</b> Abre la plantilla oficial: <a href="https://docs.google.com/spreadsheets/d/1nKjODxGBnQlQ_cHIIfyR5hZNqwF3QzhcVFpk7uPWbmI/copy" target="_blank" style="color:#1565C0;font-weight:700">👉 Clic aquí para copiar la plantilla</a><br>
           <b>2.</b> En Google Sheets: <b>Hacer una copia</b> → se guarda en tu Drive<br>
           <b>3.</b> Abre tu copia → <b>Extensiones → Apps Script</b><br>
+          <div style="background:#f0f7ff;border-left:3px solid #1565C0;border-radius:6px;padding:8px 10px;margin:6px 0;font-size:11px;line-height:1.6">
+            <b style="color:#1565C0">📱 ¿Lo estás haciendo desde el celular o tablet?</b><br>
+            La app de Google Sheets del móvil <b>no</b> muestra "Extensiones". Hazlo así:<br>
+            abre <b>Chrome</b> → entra a <code style="background:#fff;padding:1px 3px;border-radius:3px">script.google.com</code> → menú ⋮ → activa <b>"Sitio de escritorio"</b>.<br>
+            <b>Recomendado:</b> hacer esta configuración desde una computadora, es mucho más cómodo.
+          </div>
           <b>4.</b> <span style="background:#fef9e7;padding:2px 4px;border-radius:3px"><b>(Opcional — solo si vas a facturar)</b></span> En el código, busca el bloque <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px">var DATIL</code> y completa con tus datos: <b>API Key de Datil, clave de tu firma electrónica, RUC y razón social</b>.<br>
           <span style="color:#64748b;font-size:11px">Si NO vas a facturar todavía, omite este paso y déjalo tal cual — la sincronización funciona igual.</span><br>
           <b>5.</b> Clic en <b>Implementar → Nueva implementación</b><br>
-          <b>6.</b> Tipo: <b>Aplicación web</b> · Acceso: <b>Cualquier persona</b> → <b>Implementar</b><br>
+          <span style="color:#64748b;font-size:11px">En algunos dispositivos aparece como <b>Desplegar → Nuevo despliegue</b>. Es lo mismo.</span><br>
+          <b>6.</b> Tipo: <b>Aplicación web</b> · Acceso: <b>Cualquier persona</b> → <b>Implementar</b> (o <b>Desplegar</b>)<br>
+          <div style="background:#fff4e5;border-left:3px solid #f59e0b;border-radius:6px;padding:8px 10px;margin:6px 0;font-size:11px;line-height:1.6">
+            <b style="color:#b45309">⚠️ Muy importante — "¿Quién tiene acceso?":</b><br>
+            ✅ Elige <b>"Cualquier persona"</b> · en inglés: <b>"Anyone"</b><br>
+            ❌ NO elijas <b>"Cualquier persona con una cuenta de Google"</b> ("Anyone with Google account") — con esa opción la sincronización NO funciona.<br>
+            ❌ Tampoco <b>"Solo yo"</b> ("Only myself").<br>
+            <span style="color:#8a6d1f">Si Chrome ofrece <b>"¿Traducir página?"</b>, toca <b>NO</b>. El traductor cambia los nombres (por ejemplo muestra "Alguien" en vez de "Cualquier persona") y confunde.</span>
+          </div>
           <b>7.</b> Copia la URL que aparece y pégala aquí arriba → toca <b>Probar conexión</b><br><br>
           <div style="background:#f0f7ff;border-radius:6px;padding:10px;font-size:11px;line-height:1.7">
             <b style="color:#1565C0">📄 Sobre la facturación electrónica (SRI):</b><br>
