@@ -1989,6 +1989,26 @@ document.getElementById('printBtn').onclick=()=>{ guardarCotizacion(); window.pr
   const confirm = ()=>document.getElementById('factConfirm');
   const status  = ()=>document.getElementById('factStatus');
 
+
+  // Devuelve info de facturación si la orden YA fue facturada (revisa local Y nube),
+  // o null si no lo está. Evita emitir dos veces la misma factura.
+  function yaFacturadaNum(num){
+    if(!num) return null;
+    try{
+      const facts = JSON.parse(localStorage.getItem('ricchary_facturadas')||'{}');
+      if(facts[num]) return 'Marcada como facturada el ' + facts[num];
+    }catch(e){}
+    try{
+      const lista = (typeof CLOUD_HIST !== 'undefined' && CLOUD_HIST) ? CLOUD_HIST : [];
+      const enNube = lista.find(x => String(x.num) === String(num));
+      if(enNube && enNube.factura && String(enNube.factura).indexOf('FACTURADO') === 0){
+        return enNube.factura;
+      }
+    }catch(e){}
+    return null;
+  }
+  window.yaFacturadaNum = yaFacturadaNum;
+
   function abrirFactura(){
     const cot = captureCotizacion();
     // Badge de ambiente: refleja lo configurado (localStorage 'cfg_datil_prod' = '1' en producción)
@@ -2012,11 +2032,22 @@ document.getElementById('printBtn').onclick=()=>{ guardarCotizacion(); window.pr
       alert('⚠️ La facturación electrónica requiere la versión Pro (sincronización configurada). Configura tu URL en ⚙️ Configuración.');
       return;
     }
+    // BLOQUEO: no permitir facturar dos veces la misma orden
+    const _yaF = yaFacturadaNum(cot.num);
+    if(_yaF){
+      alert('🛑 LA ORDEN N° ' + cot.num + ' YA FUE FACTURADA.\n\n'
+        + _yaF + '\n\n'
+        + 'No se puede emitir una segunda factura para la misma orden.\n\n'
+        + 'Si necesitas facturar algo distinto, crea una cotización NUEVA (botón "Nueva").\n'
+        + 'Si esta factura fue un error, gestiona una NOTA DE CRÉDITO desde tu panel de Datil.');
+      return;
+    }
 
     // Resumen visual
     const itemsTxt = cot.items.map(it=>`• ${it.qty} × ${it.desc} — ${it.sub}`).join('<br>');
     document.getElementById('factResumen').innerHTML =
-      `<b>Cliente:</b> ${cot.cliente}<br>`
+      `<div style="background:#eef2ff;border-radius:6px;padding:6px 8px;margin-bottom:8px;font-weight:800;color:#1565C0">📄 Orden N° ${cot.num}</div>`
+      + `<b>Cliente:</b> ${cot.cliente}<br>`
       + `<b>RUC/Cédula:</b> ${cot.cedula}<br>`
       + `<b>Dirección:</b> ${cot.direccion}<br>`
       + (cot.mail?`<b>Email:</b> ${cot.mail}<br>`:'')
@@ -2040,6 +2071,9 @@ document.getElementById('printBtn').onclick=()=>{ guardarCotizacion(); window.pr
     status().textContent = '⏳ Enviando a Datil → SRI... (puede tardar unos segundos)';
 
     const cot = captureCotizacion();
+    // Guardar primero: así la cotización queda en el historial y en la nube
+    // aunque el usuario no haya pulsado "Guardar" antes de facturar.
+    try{ if(typeof guardarCotizacion === 'function') guardarCotizacion(); }catch(e){}
     try{
       const r = await fetch(SYNC_URL, {
         method:'POST',
