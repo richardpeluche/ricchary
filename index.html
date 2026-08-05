@@ -332,15 +332,15 @@ input, textarea, select, [contenteditable]{
 .fact-status.proc{background:#dbeafe;color:#1565C0;display:block}
 
 /* ===== ONBOARDING ===== */
-.splash-overlay{position:fixed;inset:0;z-index:1100;background:#000 url('fondo-app.jpg') center center/cover no-repeat;display:flex;align-items:center;justify-content:center;padding:24px}
+.splash-overlay{position:fixed;inset:0;z-index:1100;background:#000 url('fondo-app.jpg') center center/cover no-repeat;display:flex;align-items:center;justify-content:center;padding:24px;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .splash-overlay.hidden{display:none}
-.splash-box{max-width:380px;width:100%;text-align:center;color:#fff}
-.splash-logo-video{width:100%;max-width:340px;height:auto;margin-bottom:18px;pointer-events:none;mix-blend-mode:screen}
+.splash-box{max-width:380px;width:100%;text-align:center;color:#fff;margin:auto;padding:8px 0}
+.splash-logo-video{width:100%;max-width:230px;height:auto;margin-bottom:6px;pointer-events:none;mix-blend-mode:screen}
 .splash-brand{font-size:30px;font-weight:900;letter-spacing:1px}
 .splash-sub{font-size:14px;font-weight:300;opacity:.85;margin-bottom:24px}
-.splash-features{list-style:none;text-align:left;background:rgba(255,255,255,.08);border-radius:14px;padding:18px 20px;margin-bottom:22px}
+.splash-features{list-style:none;text-align:left;background:rgba(255,255,255,.08);border-radius:14px;padding:14px 18px;margin-bottom:16px}
 .splash-features li{font-size:13.5px;line-height:1.9;color:#fff}
-.splash-start-btn{width:100%;background:#fff;color:#1565C0;border:0;padding:14px;border-radius:10px;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:16px}
+.splash-start-btn{width:100%;background:#fff;color:#1565C0;border:0;padding:14px;border-radius:10px;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:12px}
 .splash-check{display:flex;align-items:center;justify-content:center;gap:8px;font-size:12.5px;color:rgba(255,255,255,.8);cursor:pointer}
 .splash-check input{width:16px;height:16px;cursor:pointer}
 .onb-overlay{position:fixed;inset:0;z-index:1000;background:linear-gradient(135deg,#1565C0,#0d3a73);display:none;align-items:center;justify-content:center;padding:20px}
@@ -452,6 +452,59 @@ input, textarea, select, [contenteditable]{
     box-shadow:0 20px 60px rgba(6,24,52,.42), inset 0 1px 0 rgba(255,255,255,.9);
   }
 }
+
+
+/* ═══ CONFIGURACIÓN DE IMPUESTO (pantalla de inicio) ═══ */
+.imp-card{background:rgba(255,255,255,.10);border:1.5px solid rgba(255,255,255,.30);
+  border-radius:14px;padding:16px;margin-bottom:16px;text-align:left;
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.imp-card h4{margin:0 0 4px;font-size:15px;font-weight:800;color:#fff}
+.imp-card .sub{font-size:11.5px;color:rgba(255,255,255,.72);margin-bottom:12px;line-height:1.45}
+.imp-ops{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:10px}
+.imp-op{background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.28);color:#fff;
+  border-radius:10px;padding:11px 4px;font-size:14px;font-weight:800;cursor:pointer;
+  font-family:inherit;transition:background .12s}
+.imp-op:hover{background:rgba(255,255,255,.24)}
+.imp-op.on{background:#fff;color:var(--brand);border-color:#fff}
+.imp-otro{display:none;gap:7px;margin-bottom:10px}
+.imp-otro.show{display:grid;grid-template-columns:1fr 1fr}
+.imp-otro label{font-size:10.5px;font-weight:700;color:rgba(255,255,255,.75);
+  display:flex;flex-direction:column;gap:3px}
+.imp-otro input{border:1.5px solid rgba(255,255,255,.30);background:rgba(255,255,255,.12);
+  color:#fff;border-radius:8px;padding:8px;font-size:13px;font-family:inherit}
+.imp-otro input::placeholder{color:rgba(255,255,255,.45)}
+.imp-nota{font-size:10.5px;color:rgba(255,255,255,.62);line-height:1.45;margin-top:2px}
+.imp-guardar{width:100%;background:#fff;color:var(--brand);border:0;border-radius:10px;
+  padding:12px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;margin-top:4px}
+.imp-guardar:disabled{opacity:.45;cursor:not-allowed}
+
+
+/* ═══ TITULAR DE LA PANTALLA DE INICIO ═══ */
+.claim{margin:2px 0 16px;text-align:center}
+.claim-l{display:block;font-size:26px;font-weight:900;letter-spacing:.5px;line-height:1.14;
+  color:#fff;text-shadow:0 2px 14px rgba(0,0,0,.45)}
+.claim-l.alt{background:linear-gradient(95deg,#FFD54F 0%,#FFC107 55%,#FFE082 100%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  color:#FFC107;font-size:22px;text-shadow:none}
+.claim-sep{display:block;width:44px;height:3px;margin:9px auto;border-radius:3px;
+  background:rgba(255,255,255,.35)}
+.claim-note{display:inline-block;margin-top:8px;font-size:11px;font-weight:600;
+  color:rgba(255,255,255,.78);background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.22);border-radius:20px;padding:5px 12px;line-height:1.4}
+@media(max-width:400px){
+  .claim-l{font-size:21px}
+  .claim-l.alt{font-size:18px}
+  .claim-note{font-size:10.5px}
+}
+
+
+/* Mientras se pregunta el impuesto, la lista de funciones se oculta:
+   así la pregunta y su botón Guardar entran en pantalla sin desplazar. */
+body.pidiendo-impuesto .splash-features{display:none}
+body.pidiendo-impuesto .splash-logo-video{max-width:150px;margin-bottom:4px}
+body.pidiendo-impuesto .claim-l{font-size:20px}
+body.pidiendo-impuesto .claim-l.alt{font-size:17px}
+body.pidiendo-impuesto .claim-sep{margin:6px auto}
 
 </style>
 
@@ -574,6 +627,15 @@ input, textarea, select, [contenteditable]{
       <source src="logo_animado.webm" type="video/webm">
       <source src="logo_animado_fallback.mp4" type="video/mp4">
     </video>
+    <div class="claim">
+      <span class="claim-l">COTIZA</span>
+      <span class="claim-sep"></span>
+      <span class="claim-l">AGENDA PEDIDOS</span>
+      <span class="claim-sep"></span>
+      <span class="claim-l alt">FACTURACIÓN ELECTRÓNICA</span>
+      <span class="claim-note">Requiere cuenta en Datil y clave de API</span>
+    </div>
+
     <ul class="splash-features">
       <li><b>📝 Cotiza, envía por WhatsApp y agenda en segundos</b></li>
       <li><b>♾️ Historial ilimitado en la nube (Pro)</b></li>
@@ -582,7 +644,30 @@ input, textarea, select, [contenteditable]{
       <li><b>🔍 Autocompleta datos del cliente consultando el SRI</b></li>
     </ul>
 
+    <div class="imp-card" id="impCard" style="display:none">
+      <h4>¿Qué impuesto aplicas?</h4>
+      <div class="sub">Lo preguntamos una vez. Será el valor por defecto de tus cotizaciones,
+        y podrás cambiarlo en cualquier cotización si hace falta.</div>
+      <div class="imp-ops">
+        <button type="button" class="imp-op" id="impOp0"  onclick="impElegir('0')">0%</button>
+        <button type="button" class="imp-op" id="impOp12" onclick="impElegir('12')">12%</button>
+        <button type="button" class="imp-op" id="impOp15" onclick="impElegir('15')">15%</button>
+        <button type="button" class="imp-op" id="impOpotro" onclick="impElegir('otro')">Otro</button>
+      </div>
+      <div class="imp-otro" id="impOtro">
+        <label>Porcentaje<input id="impOtroTasa" type="number" step="0.01" min="0" max="100" placeholder="18"></label>
+        <label>Cómo se llama<input id="impOtroNombre" placeholder="IGV, ITBMS, VAT..."></label>
+      </div>
+      <button class="imp-guardar" id="impGuardarBtn" onclick="impGuardar()" disabled>Guardar</button>
+      <div class="imp-nota">Ecuador: 15% general, 0% si eres RIMPE Negocio Popular.
+        La facturación electrónica al SRI solo funciona en Ecuador.</div>
+    </div>
+
     <button id="splashStartBtn" class="splash-start-btn">Empezar a Cotizar →</button>
+
+    <div id="impAviso" style="display:none;font-size:11.5px;color:#FFD54F;margin-bottom:10px;line-height:1.45">
+      Elige tu impuesto arriba para continuar.
+    </div>
 
     <label class="splash-check">
       <input type="checkbox" id="splashNoMostrar">
@@ -792,10 +877,10 @@ input, textarea, select, [contenteditable]{
       </tr>
       <tr>
         <td class="total-label">
-          IVA <select id="ivaSel" style="font-size:12px;padding:2px 4px;border:0.5px solid var(--border);border-radius:4px;margin-left:4px">
+          <span id="impNombreLbl">IVA</span> <select id="ivaSel" style="font-size:12px;padding:2px 4px;border:0.5px solid var(--border);border-radius:4px;margin-left:4px">
             <option value="0">0%</option>
             <option value="12">12%</option>
-            <option value="15" selected="">15%</option>
+            <option value="15">15%</option>
           </select>:
         </td>
         <td class="total-val" id="ivaVal">$0,00</td>
@@ -893,8 +978,22 @@ Este documento es de carácter contrato cliente-ofertador, que firmado constituy
     <button type="button" id="btnVerGuia" style="width:100%;background:#f0f7ff;color:#1565C0;border:1px solid #cfe0f7;padding:12px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:16px">❓ Ver guía / Ayuda</button>
 
     <div class="cfg-group">
-      <label>📧 Gmail de la empresa</label>
-      <input type="email" id="cfgGmail" placeholder="empresa@gmail.com">
+      <label>🧾 Impuesto por defecto</label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="text" id="cfgImpNombre" placeholder="IVA" style="flex:1"
+               title="Cómo se llama en tu país: IVA, IGV, ITBMS, VAT...">
+        <div style="display:flex;align-items:center;gap:4px">
+          <input type="number" id="cfgImpTasa" step="0.01" min="0" max="100"
+                 placeholder="0" style="width:82px;text-align:center">
+          <span style="font-weight:700;color:#546E7A">%</span>
+        </div>
+      </div>
+      <small style="display:block;color:#546E7A;font-size:11.5px;line-height:1.45;margin-top:6px">
+        Es el valor con el que arranca cada cotización nueva; puedes cambiarlo en una
+        cotización puntual. <b>No modifica las cotizaciones ya guardadas</b>, que conservan
+        su propia tasa.<br>
+        Ecuador: 15% general, 0% si eres RIMPE Negocio Popular.
+      </small>
     </div>
 
     <div class="cfg-group">
@@ -1585,11 +1684,17 @@ function actualizarMsgAmbiente(){
   }
 }
 function loadConfig(){
+  // Impuesto: se cargan tasa y nombre configurados
+  try{
+    const it=document.getElementById('cfgImpTasa'), inm=document.getElementById('cfgImpNombre');
+    if(it) it.value = localStorage.getItem('cfg_imp_tasa') ?? '';
+    if(inm) inm.value = localStorage.getItem('cfg_imp_nombre') || 'IVA';
+  }catch(e){}
   const g=localStorage.getItem('cfg_gmail')||'';
   const e=localStorage.getItem('cfg_empresa')||'';
   const l=localStorage.getItem('cfg_logo')||'';
   const rep=localStorage.getItem('cfg_representante')||'';
-  if(g)document.getElementById('cfgGmail').value=g;
+  // (el campo Gmail se retiró; el valor viejo queda guardado sin usarse)
   if(e)document.getElementById('cfgEmpresa').value=e;
   if(rep)document.getElementById('cfgRepresentante').value=rep;
   const lk=localStorage.getItem('cfg_link')||'';
@@ -1774,7 +1879,22 @@ cfgLogoInput.onchange=e=>{
 };
 
 cfgSave.onclick=()=>{
-  const g=document.getElementById('cfgGmail').value.trim();
+  // Impuesto por defecto
+  try{
+    const it=document.getElementById('cfgImpTasa'), inm=document.getElementById('cfgImpNombre');
+    if(it){
+      const raw=String(it.value).replace(',','.').trim();
+      if(raw!==''){
+        const n=parseFloat(raw);
+        if(isNaN(n)||n<0||n>100){ alert('El impuesto debe ser un porcentaje entre 0 y 100.'); return; }
+        localStorage.setItem('cfg_imp_tasa', String(n));
+        localStorage.setItem('cfg_imp_nombre', (inm&&inm.value.trim())||'IVA');
+        localStorage.setItem('cfg_imp_configurado','1');
+        if(typeof impAplicarASelector==='function') impAplicarASelector();
+      }
+    }
+  }catch(e){}
+  const g=localStorage.getItem('cfg_gmail')||'';
   const e=document.getElementById('cfgEmpresa').value.trim();
   const rep=document.getElementById('cfgRepresentante').value.trim();
   localStorage.setItem('cfg_gmail',g);
@@ -2652,6 +2772,137 @@ window.addEventListener('load', async ()=>{
   // Trae marcas de agendado desde la nube y refresca historial si está abierto
   await syncListar();
 });
+
+/* ═══════════════════════════════════════════════════════════════
+   IMPUESTO CONFIGURABLE
+   - Se pregunta UNA VEZ en la pantalla de inicio (no se asume nada)
+   - Guarda tasa + nombre (IVA / IGV / ITBMS / VAT...) para otros países
+   - El historial NO se toca: cada cotización conserva la tasa con la
+     que se hizo. Esto solo fija el valor por defecto de una NUEVA.
+   ═══════════════════════════════════════════════════════════════ */
+(function(){
+  var K_TASA='cfg_imp_tasa', K_NOMBRE='cfg_imp_nombre', K_LISTO='cfg_imp_configurado';
+  var sel=null;
+  function $(id){ return document.getElementById(id); }
+
+  window.impTasa   = function(){ var v=localStorage.getItem(K_TASA); return v===null?null:v; };
+  window.impNombre = function(){ return localStorage.getItem(K_NOMBRE) || 'IVA'; };
+  window.impConfigurado = function(){ return localStorage.getItem(K_LISTO)==='1'; };
+
+  /* Reconstruye el selector con la tasa configurada incluida */
+  window.impAplicarASelector = function(){
+    var s=$('ivaSel'); if(!s) return;
+    var tasa = impTasa(), nom = impNombre();
+    var base = ['0','12','15'];
+    if(tasa!==null && base.indexOf(String(tasa))===-1) base.push(String(tasa));
+    base.sort(function(a,b){ return parseFloat(a)-parseFloat(b); });
+    s.innerHTML = base.map(function(v){
+      return '<option value="'+v+'">'+v+'%</option>';
+    }).join('');
+    // Siempre queda en la tasa configurada. Al ABRIR una cotización guardada,
+    // el código de la V1 sobrescribe este valor después con la tasa de esa
+    // cotización (ivaSel.value = cot.iva), así que el historial no se altera.
+    s.value = (tasa===null ? '0' : String(tasa));
+    var lbl=$('impNombreLbl'); if(lbl) lbl.textContent=nom;
+    if(typeof recalcular==='function'){ try{ recalcular(); }catch(e){} }
+    else if(typeof calcTotals==='function'){ try{ calcTotals(); }catch(e){} }
+    else { try{ s.dispatchEvent(new Event('change')); }catch(e){} }
+  };
+
+  window.impElegir = function(v){
+    sel = v;
+    ['0','12','15','otro'].forEach(function(x){
+      var b=$('impOp'+x); if(b) b.classList.toggle('on', String(x)===String(v));
+    });
+    var o=$('impOtro'); if(o) o.classList.toggle('show', v==='otro');
+    var g=$('impGuardarBtn'); if(g) g.disabled=false;
+  };
+
+  window.impGuardar = function(){
+    var tasa, nombre;
+    if(sel==='otro'){
+      var t=($('impOtroTasa').value||'').replace(',','.').trim();
+      var n=($('impOtroNombre').value||'').trim();
+      var num=parseFloat(t);
+      if(t==='' || isNaN(num) || num<0 || num>100){
+        alert('Escribe un porcentaje válido entre 0 y 100.'); return;
+      }
+      tasa=String(num); nombre=n||'Impuesto';
+    }else{
+      if(sel===null){ alert('Elige una opción.'); return; }
+      tasa=String(sel); nombre='IVA';
+    }
+    localStorage.setItem(K_TASA, tasa);
+    localStorage.setItem(K_NOMBRE, nombre);
+    localStorage.setItem(K_LISTO, '1');
+    var c=$('impCard'); if(c) c.style.display='none';
+    impAplicarASelector();
+  };
+
+  /* Bloquea la salida del inicio mientras no haya tasa configurada.
+     Sin esto, quien marque "no volver a mostrar" antes de elegir
+     nunca vería la pregunta y quedaría emitiendo con una tasa que
+     nadie decidió. */
+  function candado(activo){
+    var chk=$('splashNoMostrar'), btn=$('splashStartBtn'), aviso=$('impAviso');
+    if(chk){
+      chk.disabled = activo;
+      if(activo) chk.checked = false;
+      var lbl = chk.closest('.splash-check');
+      if(lbl) lbl.style.opacity = activo ? '.4' : '';
+    }
+    if(btn) btn.disabled = activo;
+    if(aviso) aviso.style.display = activo ? 'block' : 'none';
+    try{ document.body.classList.toggle('pidiendo-impuesto', !!activo); }catch(e){}
+  }
+
+  function pintar(){
+    var c=$('impCard');
+    var falta = !impConfigurado();
+    if(c){
+      c.style.display = falta ? 'block' : 'none';
+      var g=$('impGuardarBtn'); if(g && falta) g.disabled=true;
+    }
+    candado(falta);
+    // Si falta configurar, la pantalla de inicio se muestra SIEMPRE,
+    // aunque el usuario la haya ocultado antes (usuarios ya existentes).
+    if(falta){
+      var sp=$('splashScreen');
+      if(sp) sp.classList.remove('hidden');
+    }
+    impAplicarASelector();
+  }
+
+  // Tras guardar la tasa se libera el candado
+  var _guardarOrig = window.impGuardar;
+  window.impGuardar = function(){
+    _guardarOrig.apply(this, arguments);
+    if(impConfigurado()) candado(false);
+  };
+
+  window.addEventListener('load', function(){
+    pintar();
+    // Segunda pasada: initSplash de la V1 corre en su propio bloque y
+    // podría volver a ocultar la pantalla. Reafirmamos después.
+    setTimeout(pintar, 0);
+    var b=$('splashStartBtn');
+    if(b){
+      // Refuerzo: aunque algo burle el botón deshabilitado, no se sale
+      // del inicio sin tasa elegida. Es un dato fiscal, no confiamos
+      // solo en el atributo disabled.
+      b.addEventListener('click', function(ev){
+        if(!impConfigurado()){
+          ev.preventDefault(); ev.stopImmediatePropagation();
+          var sp=$('splashScreen'); if(sp) sp.classList.remove('hidden');
+          try{ localStorage.removeItem('ricchary_splash_oculto'); }catch(e){}
+          candado(true);
+          return false;
+        }
+        setTimeout(impAplicarASelector, 60);
+      }, true);
+    }
+  });
+})();
 
 </script>
 <script>
