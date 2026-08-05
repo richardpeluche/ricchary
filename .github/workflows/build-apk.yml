@@ -11,9 +11,9 @@ jobs:
     permissions:
       contents: write
     env:
-      KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASSWORD || 'android123' }}
-      KEY_ALIAS_VAL: ${{ secrets.KEY_ALIAS || 'ricchary' }}
-      KEY_PASS: ${{ secrets.KEY_PASSWORD || 'android123' }}
+      KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASSWORD }}
+      KEY_ALIAS_VAL: ${{ secrets.KEY_ALIAS }}
+      KEY_PASS: ${{ secrets.KEY_PASSWORD }}
 
     steps:
       - uses: actions/checkout@v4
@@ -26,14 +26,15 @@ jobs:
 
       - name: Accept Android licenses and install components
         run: |
-          yes |       rm -rf $ANDROID_HOME/platforms/android-35 || true
-          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-35" "build-tools;34.0.0"
+          rm -rf $ANDROID_HOME/platforms/android-36 || true
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null || true
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-36" "build-tools;36.0.0"
 
-      - name: Install Gradle 8.7
+      - name: Install Gradle 8.11.1
         run: |
-          wget -q https://services.gradle.org/distributions/gradle-8.7-bin.zip -O /tmp/gradle.zip
+          wget -q https://services.gradle.org/distributions/gradle-8.11.1-bin.zip -O /tmp/gradle.zip
           unzip -q /tmp/gradle.zip -d /opt/gradle
-          echo "/opt/gradle/gradle-8.7/bin" >> $GITHUB_PATH
+          echo "/opt/gradle/gradle-8.11.1/bin" >> $GITHUB_PATH
 
       - name: Download app icon
         run: |
@@ -45,16 +46,15 @@ jobs:
 
       - name: Prepare keystore
         run: |
-          if [ -n "$KEYSTORE_BASE64" ]; then
-            echo "Usando keystore persistente desde secret"
-            echo "$KEYSTORE_BASE64" | base64 -d > android.keystore
-          else
-            echo "ADVERTENCIA: Sin KEYSTORE_BASE64 - generando keystore temporal"
-            keytool -genkey -v -keystore android.keystore \
-              -alias "$KEY_ALIAS_VAL" -keyalg RSA -keysize 2048 -validity 10000 \
-              -dname "CN=RICCHARY,OU=Dev,O=Ricchary,L=EC,C=EC" \
-              -storepass "$KEYSTORE_PASS" -keypass "$KEY_PASS" -noprompt
+          # NO generar keystore temporal como fallback: un AAB firmado con otra
+          # llave es rechazado por Play y no tiene arreglo. Mejor fallar aqui.
+          if [ -z "$KEYSTORE_BASE64" ] || [ -z "$KEYSTORE_PASS" ] || [ -z "$KEY_ALIAS_VAL" ] || [ -z "$KEY_PASS" ]; then
+            echo "::error::Falta uno o mas secrets de firma (KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD)."
+            echo "::error::Build abortado para no generar un AAB con firma incorrecta."
+            exit 1
           fi
+          echo "Usando keystore persistente desde secret"
+          echo "$KEYSTORE_BASE64" | base64 -d > android.keystore
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
 
@@ -64,7 +64,7 @@ jobs:
       - name: Generate Gradle wrapper
         run: |
           cd android
-          gradle wrapper --gradle-version 8.7
+          gradle wrapper --gradle-version 8.11.1
           chmod +x gradlew
 
       - name: Build APK (para pruebas directas)
@@ -84,6 +84,58 @@ jobs:
             -Pandroid.injected.signing.store.password="$KEYSTORE_PASS" \
             -Pandroid.injected.signing.key.alias="$KEY_ALIAS_VAL" \
             -Pandroid.injected.signing.key.password="$KEY_PASS"
+
+      - name: Verificar el AAB (targetSdk, version, firma)
+        run: |
+          set -e
+          AAB=$(ls android/app/build/outputs/bundle/release/*.aab | head -1)
+          echo "AAB: $AAB"
+
+          # bundletool: unica forma de leer el manifiesto REAL dentro del .aab
+          wget -q https://github.com/google/bundletool/releases/download/1.17.2/bundletool-all-1.17.2.jar \
+            -O /tmp/bundletool.jar
+
+          dump() { java -jar /tmp/bundletool.jar dump manifest --bundle="$AAB" --xpath="$1" 2>/dev/null; }
+
+          TSDK=$(dump "/manifest/uses-sdk/@android:targetSdkVersion")
+          VCODE=$(dump "/manifest/@android:versionCode")
+          VNAME=$(dump "/manifest/@android:versionName")
+
+          echo "=================================================="
+          echo " LEIDO DEL AAB (no del codigo fuente)"
+          echo "=================================================="
+          echo " targetSdkVersion : $TSDK"
+          echo " versionCode      : $VCODE"
+          echo " versionName      : $VNAME"
+
+          # SHA-256 del certificado con el que se firmo realmente el AAB
+          mkdir -p /tmp/sig && cd /tmp/sig
+          unzip -o -q "$GITHUB_WORKSPACE/$AAB" 'META-INF/*' 2>/dev/null || \
+            unzip -o -q "$AAB" 'META-INF/*' 2>/dev/null || true
+          CERT=$(ls META-INF/*.RSA META-INF/*.DSA META-INF/*.EC 2>/dev/null | head -1)
+          SHA_AAB=$(keytool -printcert -file "$CERT" 2>/dev/null | grep -i "SHA256:" | head -1 | sed 's/.*SHA256: *//')
+          cd "$GITHUB_WORKSPACE"
+
+          SHA_KEY=$(keytool -list -v -keystore android.keystore \
+            -alias "$KEY_ALIAS_VAL" -storepass "$KEYSTORE_PASS" 2>/dev/null \
+            | grep -i "SHA256:" | head -1 | sed 's/.*SHA256: *//')
+
+          echo " SHA-256 (firma del AAB) : $SHA_AAB"
+          echo " SHA-256 (keystore)      : $SHA_KEY"
+          echo "=================================================="
+          echo " Compara el SHA-256 con Play Console >"
+          echo " Configuracion > Integridad de la app >"
+          echo " Firma de apps > CERTIFICADO DE CLAVE DE SUBIDA"
+          echo "=================================================="
+
+          FAIL=0
+          [ "$TSDK"  = "36"    ] || { echo "::error::targetSdkVersion=$TSDK, se esperaba 36. Play lo rechazara."; FAIL=1; }
+          [ "$VCODE" = "3"     ] || { echo "::error::versionCode=$VCODE, se esperaba 3."; FAIL=1; }
+          [ "$VNAME" = "1.0.2" ] || { echo "::error::versionName=$VNAME, se esperaba 1.0.2."; FAIL=1; }
+          if [ -n "$SHA_AAB" ] && [ -n "$SHA_KEY" ] && [ "$SHA_AAB" != "$SHA_KEY" ]; then
+            echo "::error::La firma del AAB NO coincide con el keystore. NO subir a Play."; FAIL=1
+          fi
+          exit $FAIL
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
