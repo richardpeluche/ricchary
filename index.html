@@ -346,7 +346,9 @@ input, textarea, select, [contenteditable]{
 .onb-overlay{position:fixed;inset:0;z-index:1000;background:linear-gradient(135deg,#1565C0,#0d3a73);display:none;align-items:center;justify-content:center;padding:20px}
 .onb-overlay.show{display:flex}
 .onb-box{background:#fff;border-radius:24px;max-width:440px;width:100%;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.4)}
-.onb-slides{flex:1;overflow:hidden;position:relative}
+.onb-slides{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative}
+/* El logo del usuario puede ser ancho: se contiene para que no se corte */
+.onb-logo img{max-width:100%;max-height:74px;height:auto;object-fit:contain;display:block;margin:0 auto}
 .onb-slide{display:none;padding:36px 28px;text-align:center;animation:onbFade .4s ease}
 .onb-slide.active{display:block}
 @keyframes onbFade{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
@@ -688,7 +690,7 @@ body.pidiendo-impuesto .claim-sep{margin:6px auto}
         <div style="margin-top:16px;text-align:left;background:#eef2ff;border-radius:12px;padding:14px 18px">
           <div style="font-size:12.5px;font-weight:800;color:#1565C0;margin-bottom:8px">⚙️ Antes de empezar, configura tu perfil:</div>
           <div style="font-size:13px;color:#374151;line-height:1.6">
-            Sube tu <b>logo</b> (si lo tienes) y aparecerá en tus cotizaciones · agrega el <b>nombre del vendedor o representante</b> · registra el <b>correo de tu empresa</b> — para una presentación más profesional ante tus clientes.
+            Sube tu <b>logo</b> (si lo tienes) y aparecerá en tus cotizaciones · agrega el <b>nombre del vendedor o representante</b> · — para una presentación más profesional ante tus clientes.
           </div>
         </div>
         <div style="margin-top:14px;text-align:left;background:#f8fafc;border-radius:12px;padding:16px 18px">
@@ -717,8 +719,8 @@ body.pidiendo-impuesto .claim-sep{margin:6px auto}
         <div class="onb-badge onb-badge-free">VERSIÓN GRATIS</div>
         <h2>✅ Lo que tienes ahora</h2>
         <ul class="onb-list">
-          <li>Cotizaciones ilimitadas</li>
-          <li>Historial de las últimas 10 cotizaciones</li>
+          <li>Hasta 10 cotizaciones guardadas</li>
+          <li>Cotiza, envía y agenda sin restricciones</li>
           <li>Envío por WhatsApp</li>
           <li>Agendamiento en Google Calendar</li>
           <li>PDF e impresión</li>
