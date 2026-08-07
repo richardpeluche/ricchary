@@ -352,8 +352,6 @@ input, textarea, select, [contenteditable]{
 .onb-slide{display:none;padding:36px 28px;text-align:center;animation:onbFade .4s ease}
 .onb-slide.active{display:block}
 @keyframes onbFade{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
-.onb-logo{margin-bottom:18px}
-.onb-logo img{width:88px;height:88px;border-radius:20px;object-fit:cover}
 .onb-slide h2{font-size:21px;color:#1A1A2E;margin-bottom:12px;line-height:1.25}
 .onb-slide p{color:#555;font-size:15px;line-height:1.5}
 .onb-list{list-style:none;text-align:left;margin:8px 0;padding:0}
@@ -684,7 +682,6 @@ body.pidiendo-impuesto .claim-sep{margin:6px auto}
 
       <!-- Slide 1: Bienvenida -->
       <div class="onb-slide active" data-slide="0">
-        <div class="onb-logo"><img id="onbLogo" src="icon-192.png" alt="logo" onerror="this.style.display='none'"></div>
         <h2>Bienvenido a tu Sistema de Cotizaciones</h2>
         <p>La forma más rápida de cotizar, enviar por WhatsApp y gestionar tus pedidos — sin complicaciones.</p>
         <div style="margin-top:16px;text-align:left;background:#eef2ff;border-radius:12px;padding:14px 18px">
@@ -757,11 +754,14 @@ body.pidiendo-impuesto .claim-sep{margin:6px auto}
 
       <!-- Slide 6: Empezar -->
       <div class="onb-slide" data-slide="5">
-        <div class="onb-logo"><img src="icon-192.png" alt="logo" onerror="this.style.display='none'"></div>
         <h2>¡Todo listo!</h2>
         <p>Configura tu empresa y logo en ⚙️ Configuración. Empieza a cotizar ahora mismo.</p>
         <p style="font-size:12px;color:#94a3b8;margin-top:14px">💡 Puedes volver a ver esta guía cuando quieras desde Configuración → "Ver guía rápida"</p>
-        <p style="font-size:11px;margin-top:6px"><a href="https://richardpeluche.github.io/ricchary/RICCHARY_Manual_Usuario.pdf" target="_blank" style="color:#94a3b8;text-decoration:underline">📄 Ver manual completo en PDF (opcional)</a></p>
+        <a href="https://richardpeluche.github.io/ricchary/RICCHARY_Manual_Usuario.pdf" target="_blank" rel="noopener"
+          style="display:inline-flex;align-items:center;gap:8px;margin-top:16px;background:#1565C0;color:#fff;
+          text-decoration:none;font-weight:700;font-size:14px;padding:13px 24px;border-radius:10px;
+          box-shadow:0 4px 14px rgba(21,101,192,.32)">📄 Descargar manual de usuario (PDF)</a>
+        <p style="font-size:11px;color:#94a3b8;margin-top:8px">Se abre en una pestaña nueva</p>
       </div>
 
     </div>
@@ -1063,7 +1063,8 @@ Este documento es de carácter contrato cliente-ofertador, que firmado constituy
             <b style="color:#1565C0">📱 ¿Lo estás haciendo desde el celular o tablet?</b><br>
             La app de Google Sheets del móvil <b>no</b> muestra "Extensiones". Hazlo así:<br>
             abre <b>Chrome</b> → entra a <code style="background:#fff;padding:1px 3px;border-radius:3px">script.google.com</code> → menú ⋮ → activa <b>"Sitio de escritorio"</b>.<br>
-            <b>Recomendado:</b> hacer esta configuración desde una computadora, es mucho más cómodo.
+            <b>🔄 Gira el celular:</b> pon la pantalla en <b>horizontal</b>. Los menús de Apps Script son anchos y en vertical quedan cortados; acostado se ve todo y es mucho más fácil.<br>
+            <b>Recomendado:</b> hacer esta configuración desde una computadora, es aún más cómodo.
           </div>
           <b>4.</b> <span style="background:#fef9e7;padding:2px 4px;border-radius:3px"><b>(Opcional — solo si vas a facturar)</b></span> En el código, busca el bloque <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px">var DATIL</code> y completa con tus datos: <b>API Key de Datil, clave de tu firma electrónica, RUC y razón social</b>.<br>
           <span style="color:#64748b;font-size:11px">Si NO vas a facturar todavía, omite este paso y déjalo tal cual — la sincronización funciona igual.</span><br>
@@ -1088,7 +1089,47 @@ Este documento es de carácter contrato cliente-ofertador, que firmado constituy
           <br><span style="color:#b45309;font-size:11px">⚠️ Necesitas una cuenta Google activa para la sincronización.</span>
         </div>
       </div>
+    
+    <div class="cfg-group" style="border-top:1px solid #e2e8f0;padding-top:14px;margin-top:4px">
+      <label>🧹 Mantenimiento</label>
+      <small style="display:block;color:#546E7A;font-size:11.5px;line-height:1.45;margin-bottom:8px">
+        Herramientas para corregir marcas equivocadas y limpiar datos de prueba.
+      </small>
+
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:9px;padding:11px;margin-bottom:9px">
+        <div style="font-size:12.5px;font-weight:700;color:#1565C0;margin-bottom:6px">
+          Quitar marca de facturación
+        </div>
+        <small style="display:block;color:#546E7A;font-size:11px;line-height:1.45;margin-bottom:8px">
+          Si una orden quedó marcada como facturada sin haberlo sido, la app te impedirá facturarla
+          después. Aquí puedes corregirlo.
+        </small>
+        <div style="display:flex;gap:7px">
+          <input type="number" id="mantOrden" placeholder="N° de orden" style="flex:1;min-width:0">
+          <button type="button" class="btn btn-outline" onclick="mantRevisar()"
+                  style="padding:8px 14px;font-size:12.5px">Revisar</button>
+        </div>
+        <div id="mantMsg" style="display:none;font-size:11.5px;line-height:1.5;margin-top:8px;
+             padding:9px 10px;border-radius:7px"></div>
+      </div>
+
+      <div style="background:#fff5f5;border:1px solid #fecaca;border-radius:9px;padding:11px">
+        <div style="font-size:12.5px;font-weight:700;color:#b91c1c;margin-bottom:6px">
+          Borrar cotizaciones de prueba
+        </div>
+        <small style="display:block;color:#7f1d1d;font-size:11px;line-height:1.45;margin-bottom:8px">
+          Borra <b>todas</b> las cotizaciones guardadas en <b>este dispositivo</b> y las marcas de
+          facturación. No toca tu hoja de Google: lo que esté en la nube se vuelve a descargar al
+          sincronizar. Úsalo para dejar limpio el historial después de hacer pruebas.
+        </small>
+        <button type="button" class="btn" onclick="mantBorrarLocal()"
+                style="background:#dc2626;color:#fff;padding:9px 14px;font-size:12.5px;width:100%">
+          Borrar historial local
+        </button>
+      </div>
     </div>
+
+  </div>
 
     <button class="cfg-save" id="cfgSave">💾 Guardar configuración</button>
     <div id="cfgMsg" style="margin-top:8px;font-size:12px;color:#16a34a;text-align:center;display:none">✅ Guardado correctamente</div>
@@ -2904,6 +2945,98 @@ window.addEventListener('load', async ()=>{
       }, true);
     }
   });
+})();
+
+/* ═══════════════════════════════════════════════════════════════
+   MANTENIMIENTO (Configuración)
+   - Quitar una marca de facturación puesta por error
+   - Limpiar el historial local tras hacer pruebas
+   ═══════════════════════════════════════════════════════════════ */
+(function(){
+  function $(id){ return document.getElementById(id); }
+  function facts(){
+    try{ return JSON.parse(localStorage.getItem('ricchary_facturadas')||'{}'); }catch(e){ return {}; }
+  }
+  function pinta(html, tipo){
+    var m=$('mantMsg'); if(!m) return;
+    var col = tipo==='ok'   ? ['#f0fdf4','#bbf7d0','#166534']
+            : tipo==='warn' ? ['#fffbeb','#fde68a','#78350f']
+            :                 ['#eff6ff','#bfdbfe','#1e40af'];
+    m.style.display='block';
+    m.style.background=col[0]; m.style.border='1px solid '+col[1]; m.style.color=col[2];
+    m.innerHTML=html;
+  }
+
+  window.mantRevisar = function(){
+    var num = ($('mantOrden').value||'').trim();
+    if(!num){ pinta('Escribe el número de orden que quieres revisar.','warn'); return; }
+
+    var local = facts()[num];
+    var nube = null;
+    try{
+      var lista = (typeof CLOUD_HIST!=='undefined' && CLOUD_HIST) ? CLOUD_HIST : [];
+      var f = lista.find(function(x){ return String(x.num)===String(num); });
+      if(f && f.factura && String(f.factura).indexOf('FACTURADO')===0) nube = f.factura;
+    }catch(e){}
+
+    if(!local && !nube){
+      pinta('La orden <b>#'+num+'</b> no está marcada como facturada. No hay nada que corregir.','ok');
+      return;
+    }
+    var h = 'La orden <b>#'+num+'</b> está marcada como facturada:<br>';
+    if(local) h += '• <b>En este dispositivo</b> — desde el '+local+'<br>';
+    if(nube)  h += '• <b>En tu hoja de Google</b> (columna <b>factura</b>)<br>';
+    h += '<br>';
+    if(local){
+      h += '<button type="button" onclick="mantQuitar(\''+num+'\')" '+
+           'style="background:#dc2626;color:#fff;border:0;border-radius:7px;padding:8px 14px;'+
+           'font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">'+
+           'Quitar la marca de este dispositivo</button>';
+    }
+    if(nube){
+      h += '<div style="margin-top:8px;font-size:11px;line-height:1.5">'+
+           '<b>Para la marca de la nube:</b> abre tu hoja de Google, busca la fila con la orden '+
+           num+' y <b>borra el contenido de la columna «factura»</b>. Desde la app no se puede '+
+           'modificar esa columna.</div>';
+    }
+    pinta(h, 'warn');
+  };
+
+  window.mantQuitar = function(num){
+    if(!confirm('¿Quitar la marca de facturación de la orden #'+num+'?\n\n'+
+                'Hazlo SOLO si esa orden no fue facturada de verdad.\n'+
+                'Si sí lo fue, quitarla te permitiría emitirla dos veces.')) return;
+    try{
+      var f = facts();
+      delete f[num];
+      localStorage.setItem('ricchary_facturadas', JSON.stringify(f));
+    }catch(e){}
+    try{ if(typeof marcarBotonFacturado==='function') marcarBotonFacturado(); }catch(e){}
+    try{ if(typeof renderHistorial==='function') renderHistorial(); }catch(e){}
+    pinta('Listo. La marca de la orden <b>#'+num+'</b> se quitó de este dispositivo.','ok');
+  };
+
+  window.mantBorrarLocal = function(){
+    var r = prompt('Esto borra TODAS las cotizaciones guardadas en este dispositivo\n'+
+                   'y todas las marcas de facturación.\n\n'+
+                   'Tu hoja de Google NO se toca: lo que esté en la nube se vuelve a\n'+
+                   'descargar al sincronizar.\n\n'+
+                   'Para confirmar, escribe: BORRAR');
+    if(r === null) return;
+    if(String(r).trim().toUpperCase() !== 'BORRAR'){
+      alert('No se borró nada. Hay que escribir BORRAR exactamente.');
+      return;
+    }
+    try{
+      localStorage.removeItem('cot_history');
+      localStorage.removeItem('ricchary_facturadas');
+      localStorage.removeItem('ricchary_agendados');
+    }catch(e){}
+    try{ if(typeof marcarBotonFacturado==='function') marcarBotonFacturado(); }catch(e){}
+    try{ if(typeof renderHistorial==='function') renderHistorial(); }catch(e){}
+    alert('Historial local borrado.\n\nSi tienes sincronización activa, tus cotizaciones de la nube '+
+          'volverán a aparecer al abrir el historial.');
+  };
 })();
 
 </script>
