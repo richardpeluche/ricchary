@@ -823,6 +823,7 @@ body.pidiendo-impuesto .claim-sep{margin:6px auto}
   <button class="btn btn-agenda" id="agendaBtn"><svg class="ic" aria-hidden="true"><use href="#ic-calendar-plus"></use></svg> Agendar Pedido</button>
   <button class="btn" id="waBtn" style="background:#25D366;color:#fff;border-color:#25D366"><svg class="ic" aria-hidden="true"><use href="#ic-brand-whatsapp"></use></svg> WhatsApp</button>
   <button class="btn btn-primary" id="printBtn"><svg class="ic" aria-hidden="true"><use href="#ic-printer"></use></svg> Imprimir / PDF</button>
+  <button class="btn btn-outline" id="ticketBtn" title="Imprimir ticket para impresora termica (58/80mm) - pedido, no fiscal">🧾 Ticket</button>
 </div>
 
 <!-- DATOS DEL CLIENTE -->
@@ -2145,6 +2146,78 @@ document.getElementById('saveBtn').onclick=()=>{
 };
 
 document.getElementById('printBtn').onclick=()=>{ guardarCotizacion(); window.print(); };
+
+/* ===== TICKET TERMICO (pedido, no fiscal) - impresion aislada 58/80mm ===== */
+document.getElementById('ticketBtn').onclick=()=>{ try{ if(typeof guardarCotizacion==='function') guardarCotizacion(); }catch(e){} imprimirTicket(); };
+function imprimirTicket(){
+  const val=id=>{ const e=document.getElementById(id); return e? (e.value!==undefined? e.value : e.textContent) : ''; };
+  const txt=id=>{ const e=document.getElementById(id); return e? (e.textContent||'').trim() : ''; };
+  const esc=s=>String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  const negocio=(localStorage.getItem('cfg_empresa')||'').trim()||'RICCHARY';
+  const link=(localStorage.getItem('cfg_link')||'').trim();
+  const orden=val('docOrden'), fecha=val('fFecha');
+  const cliente=val('fCliente'), empresa=val('fEmpresa'), tel=val('fTelefono'), ruc=val('fCedula');
+  const impNombre=txt('impNombreLbl')||'IVA';
+  const subtotal=txt('subtotalVal'), iva=txt('ivaVal'), total=txt('totalVal'), saldo=txt('saldoVal');
+  const abonoV=parseFloat((document.getElementById('fAbono')||{}).value||'0')||0;
+  const money=n=>'$'+(Number(n)||0).toFixed(2).replace('.',',');
+  let filas='';
+  document.querySelectorAll('#itemsBody tr').forEach(tr=>{
+    const q=(tr.querySelector('.qty-input')||{}).value||'';
+    const desc=(tr.querySelector('input[type="text"]')||{}).value||'';
+    const pr=(tr.querySelector('.price-input')||{}).value||'';
+    const lt=(tr.querySelector('.line-total')||{}).textContent||'';
+    if(!desc && !(+q) && !(+pr)) return;
+    filas += '<div class="it"><div class="d">'+esc(desc||'-')+'</div>'
+          +  '<div class="l"><span>'+esc(q)+' x '+esc(pr)+'</span><span>'+esc(lt)+'</span></div></div>';
+  });
+  if(!filas) filas='<div class="it"><div class="d">(sin items)</div></div>';
+  let fechaTxt=fecha; if(/^\d{4}-\d{2}-\d{2}$/.test(fecha)){ const p=fecha.split('-'); fechaTxt=p[2]+'/'+p[1]+'/'+p[0]; }
+  const abonoRow = abonoV>0 ? '<div class="tt"><span>Abono</span><span>'+money(abonoV)+'</span></div>' : '';
+  const saldoRow = abonoV>0 ? '<div class="tt bold"><span>SALDO</span><span>'+esc(saldo)+'</span></div>' : '';
+  const html = '<!DOCTYPE html><html><head><meta charset="utf-8">'
+   +'<style>'
+   +'@page{margin:0}*{box-sizing:border-box}'
+   +'body{margin:0;padding:6px 8px;width:100%;font-family:Arial,\'Segoe UI\',sans-serif;color:#000;font-size:12px;line-height:1.35}'
+   +'.c{text-align:center}.b{font-weight:700}.big{font-size:16px;font-weight:800;letter-spacing:.5px}'
+   +'.sep{border-top:1px dashed #000;margin:6px 0}.small{font-size:11px}'
+   +'.row{display:flex;justify-content:space-between;gap:6px}'
+   +'.it{margin:4px 0}.it .d{font-weight:600;word-break:break-word}'
+   +'.it .l{display:flex;justify-content:space-between;font-size:11px}'
+   +'.tt{display:flex;justify-content:space-between;margin:2px 0}.tt.bold{font-weight:800}'
+   +'.total{display:flex;justify-content:space-between;font-size:15px;font-weight:800;margin:4px 0}'
+   +'.foot{margin-top:8px;text-align:center;font-size:11px}'
+   +'.nofiscal{margin-top:6px;text-align:center;font-size:10px;border:1px solid #000;padding:2px 4px;border-radius:4px}'
+   +'</style></head><body>'
+   +'<div class="c big">'+esc(negocio)+'</div>'
+   +'<div class="c small b">COTIZACION / PEDIDO</div>'
+   +'<div class="sep"></div>'
+   +'<div class="row small"><span class="b">Orden N&deg;</span><span>'+esc(orden)+'</span></div>'
+   +'<div class="row small"><span class="b">Fecha</span><span>'+esc(fechaTxt)+'</span></div>'
+   +'<div class="sep"></div>'
+   +'<div class="small"><span class="b">Cliente: </span>'+esc(cliente||'-')+'</div>'
+   +(empresa?'<div class="small"><span class="b">Empresa: </span>'+esc(empresa)+'</div>':'')
+   +(ruc?'<div class="small"><span class="b">CI/RUC: </span>'+esc(ruc)+'</div>':'')
+   +(tel?'<div class="small"><span class="b">Tel: </span>'+esc(tel)+'</div>':'')
+   +'<div class="sep"></div>'
+   +filas
+   +'<div class="sep"></div>'
+   +'<div class="tt"><span>Subtotal</span><span>'+esc(subtotal)+'</span></div>'
+   +'<div class="tt"><span>'+esc(impNombre)+'</span><span>'+esc(iva)+'</span></div>'
+   +'<div class="total"><span>TOTAL</span><span>'+esc(total)+'</span></div>'
+   +abonoRow+saldoRow
+   +'<div class="nofiscal">Documento no tributario &middot; Comprobante de pedido</div>'
+   +'<div class="foot">Gracias por su preferencia!'+(link?'<br>'+esc(link):'')+'</div>'
+   +'</body></html>';
+  const old=document.getElementById('__ticketFrame'); if(old) old.remove();
+  const f=document.createElement('iframe'); f.id='__ticketFrame';
+  f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';
+  document.body.appendChild(f);
+  const go=()=>{ try{ f.contentWindow.focus(); f.contentWindow.print(); }catch(e){ alert('No se pudo abrir la impresion del ticket.'); } setTimeout(()=>{ try{ f.remove(); }catch(e){} }, 2000); };
+  const d=f.contentWindow.document; d.open(); d.write(html); d.close();
+  if(d.readyState==='complete') setTimeout(go,80); else f.onload=()=>setTimeout(go,80);
+}
+
 // ===== FACTURACIÓN ELECTRÓNICA (DATIL) =====
 (function(){
   const overlay = ()=>document.getElementById('factOverlay');
