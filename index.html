@@ -121,6 +121,8 @@ input, textarea, select, [contenteditable]{
 .action-bar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;justify-content:flex-end;
   margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid #e2e8f0}
 .action-bar button{padding:6px 12px!important;font-size:12.5px!important;border-radius:7px}
+.action-bar-bottom{justify-content:center;margin:18px 0 6px;padding-bottom:0;padding-top:10px;border-bottom:0;border-top:1px solid #e2e8f0}
+.action-bar-bottom #saveBtn{padding:6.3px 12.6px!important;font-size:13.1px!important}
 .btn-inicio{background:rgba(255,255,255,.14);color:#fff;border:1.5px solid rgba(255,255,255,.42);
   border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;
   width:42px;height:42px;padding:0;flex:0 0 auto;transition:background .15s,transform .1s}
@@ -231,6 +233,7 @@ input, textarea, select, [contenteditable]{
   /* Barra de acciones: permitir que los botones bajen de línea y se vean completos */
   .action-bar{flex-wrap:wrap;justify-content:center;gap:6px}
   .action-bar button{flex:1 1 auto;min-width:98px;justify-content:center;padding:7px 8px!important;font-size:12px!important}
+  .action-bar-bottom #saveBtn{padding:7.35px 8.4px!important;font-size:12.6px!important}
   /* Los secundarios quedan solo con icono: se gana una fila entera */
   /* Nueva e Historial SI llevan texto (son los que confunden si van solo con icono) */
   #nuevaBtn .lbl2,#histBtn .lbl2{display:inline}
@@ -819,10 +822,7 @@ body.pidiendo-impuesto .claim-sep{margin:6px auto}
   <button class="hist-btn" id="nuevaBtn" title="Nueva cotización (limpia el formulario)"><svg class="ic" aria-hidden="true"><use href="#ic-file-plus"></use></svg><span class="lbl2"> Nueva</span></button>
   <button class="hist-btn" id="histBtn" style="position:relative"><svg class="ic" aria-hidden="true"><use href="#ic-history"></use></svg><span class="lbl2"> Historial</span><span class="hist-save-badge" id="histSaveBadge">✓ Guardado</span></button>
   <button class="btn btn-outline" id="cfgBtn" title="Configuración"><svg class="ic" aria-hidden="true"><use href="#ic-settings"></use></svg><span class="lbl"> Configuración</span></button>
-  <button class="hist-btn" id="saveBtn" style="background:var(--brand);color:#fff;border-color:var(--brand)" title="Guardar cambios de esta cotización"><svg class="ic" aria-hidden="true"><use href="#ic-device-floppy"></use></svg><span class="lbl"> Guardar</span></button>
   <button class="btn btn-agenda" id="agendaBtn"><svg class="ic" aria-hidden="true"><use href="#ic-calendar-plus"></use></svg> Agendar Pedido</button>
-  <button class="btn" id="waBtn" style="background:#25D366;color:#fff;border-color:#25D366"><svg class="ic" aria-hidden="true"><use href="#ic-brand-whatsapp"></use></svg> WhatsApp</button>
-  <button class="btn btn-primary" id="printBtn"><svg class="ic" aria-hidden="true"><use href="#ic-printer"></use></svg> Imprimir / PDF</button>
   <button class="btn btn-outline" id="ticketBtn" title="Imprimir ticket para impresora termica (58/80mm) - pedido, no fiscal">🧾 Ticket</button>
 </div>
 
@@ -951,6 +951,12 @@ Este documento es de carácter contrato cliente-ofertador, que firmado constituy
       </div>
     </div>
   </div>
+</div>
+
+<div class="action-bar action-bar-bottom" id="actionBarBottom">
+  <button class="hist-btn" id="saveBtn" style="background:var(--brand);color:#fff;border-color:var(--brand)" title="Guardar cambios de esta cotización"><svg class="ic" aria-hidden="true"><use href="#ic-device-floppy"></use></svg><span class="lbl"> Guardar</span></button>
+  <button class="btn btn-primary" id="printBtn"><svg class="ic" aria-hidden="true"><use href="#ic-printer"></use></svg> Imprimir / PDF</button>
+  <button class="btn" id="waBtn" style="background:#25D366;color:#fff;border-color:#25D366"><svg class="ic" aria-hidden="true"><use href="#ic-brand-whatsapp"></use></svg> WhatsApp</button>
 </div>
 
 
