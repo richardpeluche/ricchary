@@ -10,10 +10,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    env:
-      KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASSWORD }}
-      KEY_ALIAS_VAL: ${{ secrets.KEY_ALIAS }}
-      KEY_PASS: ${{ secrets.KEY_PASSWORD }}
+    # Los secretos de firma NO van aqui a proposito: a nivel de job quedarian
+    # expuestos a TODOS los steps, incluido softprops/action-gh-release, que es
+    # codigo de terceros. Se declaran solo en los steps que realmente firman.
 
     steps:
       - uses: actions/checkout@v4
@@ -57,6 +56,9 @@ jobs:
           echo "$KEYSTORE_BASE64" | base64 -d > android.keystore
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS_VAL: ${{ secrets.KEY_ALIAS }}
+          KEY_PASS: ${{ secrets.KEY_PASSWORD }}
 
       - name: Configure SDK path
         run: echo "sdk.dir=$ANDROID_HOME" > android/local.properties
@@ -68,6 +70,10 @@ jobs:
           chmod +x gradlew
 
       - name: Build APK (para pruebas directas)
+        env:
+          KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS_VAL: ${{ secrets.KEY_ALIAS }}
+          KEY_PASS: ${{ secrets.KEY_PASSWORD }}
         run: |
           cd android
           ./gradlew assembleRelease --no-daemon \
@@ -77,6 +83,10 @@ jobs:
             -Pandroid.injected.signing.key.password="$KEY_PASS"
 
       - name: Build AAB (para Play Store)
+        env:
+          KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS_VAL: ${{ secrets.KEY_ALIAS }}
+          KEY_PASS: ${{ secrets.KEY_PASSWORD }}
         run: |
           cd android
           ./gradlew bundleRelease --no-daemon \
@@ -86,6 +96,10 @@ jobs:
             -Pandroid.injected.signing.key.password="$KEY_PASS"
 
       - name: Verificar el AAB (targetSdk, version, firma)
+        env:
+          KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS_VAL: ${{ secrets.KEY_ALIAS }}
+          KEY_PASS: ${{ secrets.KEY_PASSWORD }}
         run: |
           set -e
           AAB=$(ls android/app/build/outputs/bundle/release/*.aab | head -1)
@@ -152,7 +166,7 @@ jobs:
           retention-days: 30
 
       - name: Create Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65  # v2
         if: github.ref == 'refs/heads/main'
         with:
           tag_name: v1.0.${{ github.run_number }}
@@ -166,3 +180,7 @@ jobs:
             android/app/build/outputs/bundle/release/*.aab
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Limpiar keystore del workspace
+        if: always()
+        run: rm -f android.keystore
