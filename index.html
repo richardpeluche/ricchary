@@ -5,6 +5,12 @@
 <title>Proformas RICCHARY</title>
 <meta name="description" content="Sistema de cotizaciones y proformas - RICCHARY Publicidad Textil & Diseño Empresarial">
 <meta name="theme-color" content="#1565C0">
+<!-- Seguridad: segunda capa por si algo se escapa del escape de h().
+     Lo que mas importa aqui es connect-src: aunque alguien lograra inyectar
+     codigo, no podria enviar los datos de clientes a un servidor ajeno.
+     El resto es deliberadamente permisivo para no romper el ticket termico
+     (iframe + document.write), el logo en base64 ni el video del splash. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com; frame-src 'self' data: blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'">
 <link rel="manifest" href="./manifest.json">
 <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -1179,6 +1185,27 @@ Este documento es de carácter contrato cliente-ofertador, que firmado constituy
 </div>
 
 <script>
+// ── Seguridad: escape para todo lo que entra a innerHTML ──────────
+// Escapa tambien comillas. Sin ellas no sirve para atributos
+// value="..." ni para handlers inline onclick="...('X')".
+// Los datos del historial vienen de la hoja de Google (syncListar),
+// o sea de una fuente que puede ser editada por terceros.
+function h(s){
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// Valida que la URL de sincronizacion sea realmente de Google Apps Script.
+// Los fetch usan mode:'no-cors' (respuesta opaca), asi que NUNCA fallan de
+// forma visible: si la URL fuera alterada, la app seguiria diciendo
+// "guardado en la nube" mientras los datos van a otro lado. Por eso avisamos.
+function urlSyncValida(u){
+  try{
+    const x = new URL(String(u||'').trim());
+    return x.protocol === 'https:' && x.hostname === 'script.google.com';
+  }catch(e){ return false; }
+}
 // ── Items table ──────────────────────────────────────────────
 const defaultItems=[
   {qty:1000,desc:"GORRAS MALLA ESTAMPADO — BORDADO FRONTAL Y ESPALDA",price:0.95},
@@ -1211,7 +1238,7 @@ function calcTotals(){
 function addRow(item){
   const tb=document.getElementById('itemsBody');
   const tr=document.createElement('tr');tr.className='item-row';
-  tr.innerHTML=`<td><input class="qty-input" type="number" min="0" step="1" value="${item?item.qty:1}" style="width:52px;text-align:center;border:none;background:transparent;font-size:13px;color:var(--text)"></td><td><input type="text" value="${item?item.desc:''}" placeholder="Descripción" style="width:100%;border:none;background:transparent;font-size:13px;color:var(--text)"></td><td><input class="price-input" type="number" min="0" step="0.01" value="${item?item.price:0}" style="width:80px;text-align:right;border:none;background:transparent;font-size:13px;color:var(--text)"></td><td class="line-total" style="text-align:right;font-weight:600;font-variant-numeric:tabular-nums">$0.00</td><td><button class="del-btn" title="Eliminar"><svg class="ic" aria-hidden="true"><use href="#ic-trash"></use></svg></button></td>`;
+  tr.innerHTML=`<td><input class="qty-input" type="number" min="0" step="1" value="${h(item?item.qty:1)}" style="width:52px;text-align:center;border:none;background:transparent;font-size:13px;color:var(--text)"></td><td><input type="text" value="${h(item?item.desc:'')}" placeholder="Descripción" style="width:100%;border:none;background:transparent;font-size:13px;color:var(--text)"></td><td><input class="price-input" type="number" min="0" step="0.01" value="${h(item?item.price:0)}" style="width:80px;text-align:right;border:none;background:transparent;font-size:13px;color:var(--text)"></td><td class="line-total" style="text-align:right;font-weight:600;font-variant-numeric:tabular-nums">$0.00</td><td><button class="del-btn" title="Eliminar"><svg class="ic" aria-hidden="true"><use href="#ic-trash"></use></svg></button></td>`;
   tr.querySelector('.del-btn').onclick=()=>{tr.remove();calcTotals()};
   tr.querySelectorAll('input').forEach(i=>i.addEventListener('input',calcTotals));
   tb.appendChild(tr);calcTotals();
@@ -1611,22 +1638,22 @@ function renderHistorial(){
   container.innerHTML=hist.map((cot,idx)=>`
     <div class="hist-card">
       <div class="hist-card-header">
-        <span class="hist-card-num">Proforma #${cot.num||'—'} ${yaAgendado(cot.num)?'<span class="badge-agendado">✅ Agendado</span>':''}${cot._cloud?'<span class="badge-nube">☁️ Nube</span>':''}</span>
-        <span class="hist-card-date">🕓 ${cot.savedAt}</span>
+        <span class="hist-card-num">Proforma #${h(cot.num||'—')} ${yaAgendado(cot.num)?'<span class="badge-agendado">✅ Agendado</span>':''}${cot._cloud?'<span class="badge-nube">☁️ Nube</span>':''}</span>
+        <span class="hist-card-date">🕓 ${h(cot.savedAt)}</span>
       </div>
-      <div class="hist-card-client">👤 ${cot.cliente||'Sin nombre'}</div>
-      <div class="hist-card-total">💰 ${cot.total} &nbsp;<small style="color:var(--muted);font-weight:400">${cot.fecha||''}</small>${cot.abono?` &nbsp;<small style="color:#16a34a">Abono: $${cot.abono}</small> <small style="color:#b91c1c">Saldo: ${cot.saldo||''}</small>`:''}</div>
+      <div class="hist-card-client">👤 ${h(cot.cliente||'Sin nombre')}</div>
+      <div class="hist-card-total">💰 ${h(cot.total)} &nbsp;<small style="color:var(--muted);font-weight:400">${h(cot.fecha||'')}</small>${cot.abono?` &nbsp;<small style="color:#16a34a">Abono: $${h(cot.abono)}</small> <small style="color:#b91c1c">Saldo: ${h(cot.saldo||'')}</small>`:''}</div>
       <div style="margin:4px 0 6px">
-        <select class="estado-sel" style="border-color:${ESTADO_COLOR[cot.estado||'Cotizado']};color:${ESTADO_COLOR[cot.estado||'Cotizado']}" onchange="cambiarEstado('${cot.num}', this.value)">
+        <select class="estado-sel" style="border-color:${ESTADO_COLOR[cot.estado||'Cotizado']};color:${ESTADO_COLOR[cot.estado||'Cotizado']}" onchange="cambiarEstado('${h(cot.num)}', this.value)">
           ${ESTADOS.map(e=>`<option value="${e}" ${e===(cot.estado||'Cotizado')?'selected':''}>${e}</option>`).join('')}
         </select>
       </div>
-      <div class="hist-card-items">${(cot.items||[]).slice(0,3).map(it=>`• ${it.qty} × ${it.desc}`).join('<br>')+(cot.items.length>3?`<br><small>+${cot.items.length-3} ítems más...</small>`:'')}</div>
+      <div class="hist-card-items">${(cot.items||[]).slice(0,3).map(it=>`• ${h(it.qty)} × ${h(it.desc)}`).join('<br>')+(cot.items.length>3?`<br><small>+${cot.items.length-3} ítems más...</small>`:'')}</div>
       <div class="hist-card-actions">
         <button class="btn-hist-load" onclick="cargarCotizacion(window._hist[${idx}])">📂 Cargar en formulario</button>
         <button class="btn-hist-agenda" onclick="agendarDesdeCot(window._hist[${idx}])">${yaAgendado(cot.num)?'🔁 Reagendar':'📅 Agendar'}</button>
-        ${esFacturada(cot)?`<button class="btn-hist-vfact" onclick="verFactura('${cot.num}')">📄 Ver Factura</button>`:''}
-        ${cot._cloud?`<button class="btn-hist-del" onclick="eliminarCotNube('${String(cot.num).replace(/'/g,'')}')">🗑 Eliminar</button>`:`<button class="btn-hist-del" onclick="eliminarCot(${cot.id})">🗑 Eliminar</button>`}
+        ${esFacturada(cot)?`<button class="btn-hist-vfact" onclick="verFactura('${h(cot.num)}')">📄 Ver Factura</button>`:''}
+        ${cot._cloud?`<button class="btn-hist-del" onclick="eliminarCotNube('${h(cot.num)}')">🗑 Eliminar</button>`:`<button class="btn-hist-del" onclick="eliminarCot(${cot.id})">🗑 Eliminar</button>`}
       </div>
     </div>
   `).join('');
@@ -1767,7 +1794,7 @@ function loadConfig(){
   }
   aplicarFirmas(e, rep);
   if(l){
-    cfgLogoPreview.innerHTML='<img src="'+l+'" alt="logo">';
+    cfgLogoPreview.innerHTML='<img src="'+h(l)+'" alt="logo">';
     // Aplicar al banner
     document.getElementById('bannerLogoImg').src=l;
     document.getElementById('bannerLogoImg').style.display='block';
@@ -1918,7 +1945,7 @@ cfgLogoInput.onchange=e=>{
   const f=e.target.files[0];if(!f)return;
   const r=new FileReader();
   r.onload=ev=>{
-    cfgLogoPreview.innerHTML='<img src="'+ev.target.result+'" alt="logo">';
+    cfgLogoPreview.innerHTML='<img src="'+h(ev.target.result)+'" alt="logo">';
     // Preview en el banner
     document.getElementById('bannerLogoImg').src=ev.target.result;
     document.getElementById('bannerLogoImg').style.display='block';
@@ -1953,6 +1980,14 @@ cfgSave.onclick=()=>{
   const lk2=document.getElementById('cfgLink')?.value.trim()||'';
   localStorage.setItem('cfg_link',lk2);
   const su=document.getElementById('cfgSyncUrl')?.value.trim()||'';
+  if(su && !urlSyncValida(su)){
+    alert('⚠️ ATENCION' + '\n\n' +
+          'La URL que ingresaste NO es de Google Apps Script.' + '\n\n' +
+          'Todo lo que guardes (clientes, cedulas, direcciones y montos) se enviara a:' + '\n' +
+          su + '\n\n' +
+          'Si no reconoces esa direccion, borrala ahora. Se guardo igual para no ' +
+          'interrumpirte, pero revisala.');
+  }
   localStorage.setItem('cfg_sync_url',su);
   // Si el usuario guarda la URL del dueño, marcar este dispositivo como dueño
   // (evita que la limpieza de seguridad la borre al recargar)
@@ -2092,7 +2127,7 @@ agendaConfirmBtn.onclick=async()=>{
   syncAgendar(ordenActual(), fecha);
   cambiarEstado(ordenActual(), 'Confirmado');
   agendaStatus.className='agenda-status ok';
-  agendaStatus.innerHTML='✅ Se abrió Google Calendar. <b>Orden N° '+ordenActual()+' marcada como agendada.</b>'
+  agendaStatus.innerHTML='✅ Se abrió Google Calendar. <b>Orden N° '+h(ordenActual())+' marcada como agendada.</b>'
     +'<br><small>Los recordatorios (2 días y 2 horas antes) se aplican automáticamente si configuraste las notificaciones predeterminadas de tu calendario. Solo guarda el evento.</small>';
   agendaConfirmBtn.disabled=false;
 };
@@ -2286,17 +2321,17 @@ function imprimirTicket(){
     }
 
     // Resumen visual
-    const itemsTxt = cot.items.map(it=>`• ${it.qty} × ${it.desc} — ${it.sub}`).join('<br>');
+    const itemsTxt = cot.items.map(it=>`• ${h(it.qty)} × ${h(it.desc)} — ${h(it.sub)}`).join('<br>');
     document.getElementById('factResumen').innerHTML =
-      `<div style="background:#eef2ff;border-radius:6px;padding:6px 8px;margin-bottom:8px;font-weight:800;color:#1565C0">📄 Orden N° ${cot.num}</div>`
-      + `<b>Cliente:</b> ${cot.cliente}<br>`
-      + `<b>RUC/Cédula:</b> ${cot.cedula}<br>`
-      + `<b>Dirección:</b> ${cot.direccion}<br>`
-      + (cot.mail?`<b>Email:</b> ${cot.mail}<br>`:'')
+      `<div style="background:#eef2ff;border-radius:6px;padding:6px 8px;margin-bottom:8px;font-weight:800;color:#1565C0">📄 Orden N° ${h(cot.num)}</div>`
+      + `<b>Cliente:</b> ${h(cot.cliente)}<br>`
+      + `<b>RUC/Cédula:</b> ${h(cot.cedula)}<br>`
+      + `<b>Dirección:</b> ${h(cot.direccion)}<br>`
+      + (cot.mail?`<b>Email:</b> ${h(cot.mail)}<br>`:'')
       + `<hr style="border:none;border-top:1px solid #e5e7eb;margin:8px 0">`
       + `${itemsTxt}<br>`
       + `<hr style="border:none;border-top:1px solid #e5e7eb;margin:8px 0">`
-      + `<b>TOTAL: ${cot.total}</b> (IVA ${cot.iva}%)`;
+      + `<b>TOTAL: ${h(cot.total)}</b> (IVA ${h(cot.iva)}%)`;
 
     seguro().checked = false;
     confirm().disabled = true;
@@ -2542,7 +2577,7 @@ function imprimirTicket(){
       const r = await fetch(SYNC_URL + '?accion=consultarRuc&ruc=' + encodeURIComponent(ident));
       const j = await r.json();
       if(!j || !j.ok){
-        show('❌ ' + ((j&&j.error) || 'No se encontró el contribuyente.') + ' Puedes llenar los datos manualmente.', '#b91c1c');
+        show('❌ ' + h((j&&j.error) || 'No se encontró el contribuyente.') + ' Puedes llenar los datos manualmente.', '#b91c1c');
         return;
       }
       // Autocompletar (sin pisar lo que el usuario ya escribió, salvo que esté vacío)
@@ -2557,11 +2592,11 @@ function imprimirTicket(){
       // no el representante legal del cliente (ese dato se muestra solo como info).
       if(ident.length === 13 || j.ruc){ const fc=document.getElementById('fCedula'); if(fc) fc.value = j.ruc || ident; }
 
-      let msg = '✅ <b>' + (j.razonSocial||'') + '</b>';
-      if(j.estado) msg += ' · Estado: ' + j.estado;
-      if(j.representante) msg += '<br>👤 Rep. legal: ' + j.representante;
+      let msg = '✅ <b>' + h(j.razonSocial||'') + '</b>';
+      if(j.estado) msg += ' · Estado: ' + h(j.estado);
+      if(j.representante) msg += '<br>👤 Rep. legal: ' + h(j.representante);
       if(j.avisos && j.avisos.length){
-        msg += '<br>⚠️ <b>ATENCIÓN:</b> ' + j.avisos.join(' · ');
+        msg += '<br>⚠️ <b>ATENCIÓN:</b> ' + j.avisos.map(h).join(' · ');
         show(msg, '#b45309');
         alert('⚠️ ALERTA DEL SRI\n\n' + j.avisos.join('\n') + '\n\nRevisa antes de facturar a este contribuyente.');
       } else {
@@ -2711,6 +2746,16 @@ document.addEventListener('DOMContentLoaded', function(){
 
 let SYNC_URL = (localStorage.getItem('cfg_sync_url')||'').trim();  // VACIO por defecto: cada usuario configura su propia URL
 let SYNC_ON = !!SYNC_URL;
+
+// Chequeo defensivo al arrancar: si la URL guardada dejo de ser de Apps Script
+// (por ejemplo porque algo la reescribio en localStorage), avisamos en el badge
+// en vez de sincronizar en silencio hacia un destino desconocido.
+if(SYNC_URL && !urlSyncValida(SYNC_URL)){
+  try{ console.warn('[RICCHARY] URL de sincronizacion sospechosa:', SYNC_URL); }catch(e){}
+  setTimeout(function(){
+    try{ syncStatus('⚠️ URL de sync no reconocida - revisa Configuracion', '#dc2626'); }catch(e){}
+  }, 1500);
+}
 
 // Indicador visual de estado de sincronización
 function syncStatus(txt, color){
@@ -2919,7 +2964,7 @@ window.addEventListener('load', async ()=>{
     if(tasa!==null && base.indexOf(String(tasa))===-1) base.push(String(tasa));
     base.sort(function(a,b){ return parseFloat(a)-parseFloat(b); });
     s.innerHTML = base.map(function(v){
-      return '<option value="'+v+'">'+v+'%</option>';
+      return '<option value="'+h(v)+'">'+h(v)+'%</option>';
     }).join('');
     // Siempre queda en la tasa configurada. Al ABRIR una cotización guardada,
     // el código de la V1 sobrescribe este valor después con la tasa de esa
