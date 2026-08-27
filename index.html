@@ -1505,7 +1505,7 @@ function cargarCotizacion(cot){
 }
 
 // Agendar directamente desde historial sin cargar el formulario
-function agendarDesdeCot(cot){
+async function agendarDesdeCot(cot){
   // Aviso si ya fue agendado (mismo control que el botón principal)
   const _prev = yaAgendado(cot.num);
   if(_prev){
@@ -1531,7 +1531,9 @@ function agendarDesdeCot(cot){
   const fechaISO = baseDate.toISOString().slice(0,10);
   const fechaEnd = new Date(baseDate.getTime()+48*60*60000).toISOString();
 
-  function toGCalDate(isoStr){ return isoStr.replace(/[-:]/g,'').replace(/\.\d{3}Z?$/,''); }
+  // FIX 27-ago-2026: se CONSERVA la Z (UTC). Sin ella Google interpreta la hora
+  // como local y el evento se creaba 5 horas tarde (Ecuador UTC-5).
+  function toGCalDate(isoStr){ return isoStr.replace(/[-:]/g,'').replace(/\.\d{3}/,''); }
   const gcStart = toGCalDate(baseDate.toISOString());
   const gcEnd = toGCalDate(fechaEnd);
 
@@ -1541,7 +1543,16 @@ function agendarDesdeCot(cot){
     +'&details='+encodeURIComponent(desc)
     +'&sf=true&output=xml';
 
-  window.open(gcUrl,'_blank');
+  // Intentar por Apps Script; si no hay o falla, abrir la plantilla de siempre
+  const _cal = await syncCalAgendar({
+    orden  : cot.num,
+    cliente: cliente,
+    inicio : baseDate.toISOString(),
+    desc   : desc,
+    estado : 'Confirmado'
+  });
+  if(!_cal) window.open(gcUrl,'_blank');
+
   // Registrar agendado + entrega y sincronizar (antes este camino no registraba)
   const entregaISO = baseDate.toISOString().slice(0,16);
   marcarAgendado(cot.num, new Date().toLocaleString('es-EC'), entregaISO);
@@ -2105,8 +2116,10 @@ agendaConfirmBtn.onclick=async()=>{
   const desc=`📦 PEDIDO:\n${itemsList}\n👤 CLIENTE: ${cliente}\n💰 TOTAL: ${totalTxt}\n✅ ABONO: $${abonoNum.toFixed(2)}\n⏳ SALDO: $${saldo.toFixed(2)}\n📋 OBSERVACIONES: ${notas}\n📝 NOTA: ${nota}\n📱 Generado desde Proforma RICCHARY`;
 
   // Construir URL de Google Calendar (sin API key, abre en el navegador)
+  // FIX 27-ago-2026: se CONSERVA la Z (UTC). Sin ella Google interpreta la hora
+  // como local y el evento se creaba 5 horas tarde (Ecuador UTC-5).
   function toGCalDate(isoStr){
-    return isoStr.replace(/[-:]/g,'').replace(/\.\d{3}Z?$/,'');
+    return isoStr.replace(/[-:]/g,'').replace(/\.\d{3}/,'');
   }
 
   const gcTitle=encodeURIComponent('ENTREGA: '+cliente);
@@ -2120,15 +2133,30 @@ agendaConfirmBtn.onclick=async()=>{
     +'&details='+gcDetails
     +'&sf=true&output=xml';
 
-  window.open(gcUrl,'_blank');
+  // 1) Intentar por Apps Script (evento creado directo, con recordatorios exactos)
+  agendaStatus.className='agenda-status loading';
+  agendaStatus.textContent='⏳ Agendando en tu calendario...';
+  const _cal = await syncCalAgendar({
+    orden  : ordenActual(),
+    cliente: cliente,
+    inicio : fechaStart,        // ISO en UTC, con Z
+    desc   : desc,
+    estado : 'Confirmado'
+  });
+
+  // 2) Si no hay Apps Script configurado o fallo, abrir la plantilla de siempre
+  if(!_cal) window.open(gcUrl,'_blank');
 
   // Marcar esta orden como agendada
   marcarAgendado(ordenActual(), new Date().toLocaleString('es-EC'), fecha);
   syncAgendar(ordenActual(), fecha);
   cambiarEstado(ordenActual(), 'Confirmado');
   agendaStatus.className='agenda-status ok';
-  agendaStatus.innerHTML='✅ Se abrió Google Calendar. <b>Orden N° '+h(ordenActual())+' marcada como agendada.</b>'
-    +'<br><small>Los recordatorios (2 días y 2 horas antes) se aplican automáticamente si configuraste las notificaciones predeterminadas de tu calendario. Solo guarda el evento.</small>';
+  agendaStatus.innerHTML = _cal
+    ? '✅ Evento '+(_cal.modo==='creado'?'creado':'actualizado')+' en <b>'+h(_cal.cal)+'</b> — '+h(_cal.inicio)
+      +'<br><small>Avisos: 2 días y 5 horas antes. <b>Orden N° '+h(ordenActual())+' marcada como agendada.</b></small>'
+    : '✅ Se abrió Google Calendar. <b>Orden N° '+h(ordenActual())+' marcada como agendada.</b>'
+      +'<br><small>Los recordatorios dependen de las notificaciones predeterminadas de tu calendario. Solo guarda el evento.</small>';
   agendaConfirmBtn.disabled=false;
 };
 
@@ -2744,6 +2772,8 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 })();
 
+// Evento de entrega: duracion y recordatorios en minutos (2880 = 2 dias, 300 = 5 horas)
+const CAL_MINS = 60, CAL_R1 = 2880, CAL_R2 = 300;
 let SYNC_URL = (localStorage.getItem('cfg_sync_url')||'').trim();  // VACIO por defecto: cada usuario configura su propia URL
 let SYNC_ON = !!SYNC_URL;
 
@@ -2819,6 +2849,32 @@ async function syncAgendar(orden, entrega){
     await fetch(SYNC_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ accion:'agendar', orden:orden, entrega:entrega||'' }) });
     syncStatus('☁️ Agendado sincronizado', '#22c55e');
   }catch(e){ /* silencioso */ }
+}
+
+// Agendar en Google Calendar VIA APPS SCRIPT (27-ago-2026).
+// Ventajas sobre la URL de plantilla: recordatorios exactos escritos en el
+// evento, calendario propio, duracion real y eventId para no duplicar al
+// reagendar. Si no hay URL configurada o falla, devuelve null y el codigo
+// que llama abre la plantilla de siempre.
+async function syncCalAgendar(datos){
+  if(!SYNC_URL) return null;
+  try{
+    const q = new URLSearchParams({
+      accion : 'calAgendar',
+      orden  : datos.orden,
+      cliente: datos.cliente,
+      inicio : datos.inicio,          // ISO en UTC, con Z
+      desc   : datos.desc || '',
+      estado : datos.estado || 'Confirmado',
+      mins   : String(CAL_MINS),
+      r1     : String(CAL_R1),
+      r2     : String(CAL_R2),
+      _      : String(Date.now())     // anti-cache
+    });
+    const r = await fetch(SYNC_URL + '?' + q.toString(), { cache:'no-store' });
+    const j = await r.json();
+    return (j && j.ok) ? j : null;
+  }catch(e){ return null; }
 }
 
 // Pedir el siguiente número de orden a la hoja (numeración centralizada)
