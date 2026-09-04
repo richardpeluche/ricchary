@@ -1419,6 +1419,51 @@ function ordenActual(){
   return document.getElementById('docOrden')?.value || '';
 }
 
+/* ══ REPETIR PEDIDO ══════════════════════════════════════════════
+   Reutilizar el MISMO número sobrescribe la fila en la hoja (la función
+   guardar del Apps Script hace upsert por número de orden). Eso borraba la
+   venta anterior del reporte de ganancias, dejaba la factura pegada a un
+   contenido distinto y movía el evento de calendario en vez de crear otro.
+   Por eso se CLONA con número nuevo y la proforma original queda intacta. */
+function _telClave(t){ return String(t||'').replace(/[^0-9]/g,'').slice(-9); }
+
+/* Pedidos REALES previos de ese cliente. No cuenta proformas que nunca se
+   cerraron: decirle "2º pedido" a quien solo pidió precio queda mal. */
+function pedidosPrevios(cot, excluirNum){
+  const tel = _telClave(cot && cot.telefono);
+  if(!tel) return 0;
+  let fuente = [];
+  try{ fuente = (typeof CLOUD_HIST!=='undefined' && CLOUD_HIST && CLOUD_HIST.length) ? CLOUD_HIST : getHistory(); }
+  catch(e){ fuente = []; }
+  const vistos = {};
+  fuente.forEach(c=>{
+    if(_telClave(c.telefono) !== tel) return;
+    if(String(c.num) === String(excluirNum||'')) return;
+    if((c.estado||'Cotizado') === 'Cotizado') return;
+    vistos[String(c.num)] = 1;
+  });
+  return Object.keys(vistos).length;
+}
+
+function repetirCotizacion(cot){
+  const nuevo = getNextOrden();
+  if(!confirm('¿Repetir el pedido de '+(cot.cliente||'este cliente')+'?\n\n'+
+    '• Se copia el contenido de la proforma N° '+cot.num+'\n'+
+    '• Sale con número NUEVO: '+nuevo+'\n'+
+    '• Sin abono, en estado «Cotizado» y sin factura\n\n'+
+    'La proforma N° '+cot.num+' queda intacta.')) return;
+  cargarCotizacion(cot);
+  setOrdenActual(nuevo);
+  const fF=document.getElementById('fFecha'); if(fF) fF.value = new Date().toISOString().slice(0,10);
+  const fA=document.getElementById('fAbono'); if(fA) fA.value='';
+  estadoActual = 'Cotizado';
+  const nt=document.getElementById('fNotas');
+  if(nt){ const marca='Repite proforma '+cot.num;
+          if(nt.value.indexOf(marca)<0) nt.value=(nt.value?nt.value.trim()+'\n':'')+marca; }
+  if(window.marcarBotonFacturado) setTimeout(window.marcarBotonFacturado, 50);
+  if(typeof syncStatus==='function') syncStatus('🔁 Repetido → proforma N° '+nuevo, '#7c3aed');
+}
+
 function saveHistory(arr){
   localStorage.setItem('cot_history', JSON.stringify(arr));
 }
@@ -1672,6 +1717,7 @@ function renderHistorial(){
       <div class="hist-card-items">${(cot.items||[]).slice(0,3).map(it=>`• ${h(it.qty)} × ${h(it.desc)}`).join('<br>')+(cot.items.length>3?`<br><small>+${cot.items.length-3} ítems más...</small>`:'')}</div>
       <div class="hist-card-actions">
         <button class="btn-hist-load" onclick="cargarCotizacion(window._hist[${idx}])">📂 Cargar en formulario</button>
+        <button class="btn-hist-load" style="background:#7c3aed" onclick="repetirCotizacion(window._hist[${idx}])">🔁 Repetir pedido</button>
         <button class="btn-hist-agenda" onclick="agendarDesdeCot(window._hist[${idx}])">${yaAgendado(cot.num)?'🔁 Reagendar':'📅 Agendar'}</button>
         ${esFacturada(cot)?`<button class="btn-hist-vfact" onclick="verFactura('${h(cot.num)}')">📄 Ver Factura</button>`:''}
         ${cot._cloud?`<button class="btn-hist-del" onclick="eliminarCotNube('${h(cot.num)}')">🗑 Eliminar</button>`:`<button class="btn-hist-del" onclick="eliminarCot(${cot.id})">🗑 Eliminar</button>`}
@@ -2196,14 +2242,21 @@ document.getElementById('waBtn').onclick=()=>{
 
   const brandName = (localStorage.getItem('cfg_empresa')||'').trim() || 'Mi Empresa';
   const brandLink = (localStorage.getItem('cfg_link')||'').trim();
+  const _prev = (typeof pedidosPrevios==='function') ? pedidosPrevios(cot, cot.num) : 0;
+  const _ord  = ['','2º','3º','4º','5º','6º','7º','8º','9º','10º'][_prev] || (_prev+1)+'º';
+  const _pedidoTxt = _prev>=1 ? `  ·  ${_ord} pedido` : '';
+  const _gracias = _prev===1 ? `Gracias por confiar nuevamente en ${brandName}.\n`
+                 : _prev>=2  ? `Gracias por seguir confiando — este es su ${_ord} pedido con nosotros.\n`
+                 : '';
   const msg = `*${brandName}*\n`
-    + `📋 *Proforma N° ${cot.num}*\n`
+    + `📋 *Proforma N° ${cot.num}*${_pedidoTxt}\n`
     + `${'─'.repeat(22)}\n`
     + `👤 Cliente: ${cot.cliente}${empresa?`\n🏢 Empresa: ${empresa}`:''}\n`
     + `📅 Fecha: ${cot.fecha}\n\n`
     + `📦 *Detalle:*\n${itemsTxt}\n\n`
     + `💰 *TOTAL: ${cot.total}*${abonoTxt}${entregaTxt}\n`
     + `${'─'.repeat(22)}\n`
+    + _gracias
     + `Cualquier consulta estamos a su disposición. 🙌\n`
     + (brandLink ? `\n🌐 ${brandLink}` : ``);
 

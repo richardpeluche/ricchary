@@ -11,7 +11,7 @@
 
    ⚠️ AL SUBIR CAMBIOS: sube el número de CACHE (v4 → v5 → ...).
    ═══════════════════════════════════════════════════════════════ */
-const CACHE = 'ricchary-v4';
+const CACHE = 'ricchary-v5';
 
 // Rutas relativas: funcionan en este repo y en cualquier otro.
 const ASSETS = [
@@ -34,7 +34,8 @@ self.addEventListener('install', e => {
       Promise.all(ASSETS.map(u => c.add(u).catch(() => null)))
     )
   );
-  self.skipWaiting();
+  /* SIN skipWaiting(): la versión nueva espera a que el usuario
+     toque "Actualizar" en la barra de aviso. */
 });
 
 self.addEventListener('activate', e => {
@@ -44,6 +45,11 @@ self.addEventListener('activate', e => {
     )
   );
   self.clients.claim();
+});
+
+/* La app pide activar la versión nueva al tocar "Actualizar" */
+self.addEventListener('message', e => {
+  if (e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
 self.addEventListener('fetch', e => {
