@@ -515,6 +515,16 @@ body.pidiendo-impuesto .claim-l{font-size:20px}
 body.pidiendo-impuesto .claim-l.alt{font-size:17px}
 body.pidiendo-impuesto .claim-sep{margin:6px auto}
 
+
+/* ══ Aviso de versión nueva ══ */
+#swBar{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;z-index:9999;
+  display:none;align-items:center;gap:12px;padding:11px 16px;border-radius:12px;
+  background:#1f2937;color:#fff;font:600 14px/1.3 system-ui,sans-serif;
+  box-shadow:0 8px 26px rgba(0,0,0,.35)}
+#swBar.on{display:flex}
+#swGo{border:0;border-radius:8px;padding:8px 14px;cursor:pointer;
+  background:#22c55e;color:#062e14;font:700 14px/1 system-ui,sans-serif}
+@media(max-width:760px){#swBar{left:8px;right:8px;transform:none;justify-content:center}}
 </style>
 
 </head><body>
@@ -3221,13 +3231,45 @@ window.addEventListener('load', async ()=>{
 
 </script>
 <script>
-if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('./sw.js')
-      .then(reg=>console.log('SW registrado:',reg.scope))
-      .catch(err=>console.log('SW error:',err));
+/* ══ Service worker + aviso de versión nueva ══ */
+(function(){
+  if(!('serviceWorker' in navigator) || !/^https?:$/.test(location.protocol)) return;
+  var bar = document.getElementById('swBar');
+  var go  = document.getElementById('swGo');
+  var esperando = null, pedido = false;
+  function ofrecer(sw){ esperando = sw; if(bar) bar.classList.add('on'); }
+
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('./sw.js', {updateViaCache:'none'}).then(function(reg){
+      if(reg.waiting && navigator.serviceWorker.controller) ofrecer(reg.waiting);
+      reg.addEventListener('updatefound', function(){
+        var nw = reg.installing; if(!nw) return;
+        nw.addEventListener('statechange', function(){
+          if(nw.state === 'installed' && navigator.serviceWorker.controller) ofrecer(nw);
+        });
+      });
+      document.addEventListener('visibilitychange', function(){
+        if(!document.hidden) reg.update().catch(function(){});
+      });
+    }).catch(function(){});
   });
-}
+
+  if(go) go.onclick = function(){
+    go.textContent = 'Actualizando…';
+    pedido = true;
+    if(esperando) esperando.postMessage({type:'SKIP_WAITING'});
+    /* Red de seguridad: si el cambio de control no llega, recargar igual */
+    setTimeout(function(){ if(pedido) recargar(); }, 3000);
+  };
+
+  var recargando = false;
+  function recargar(){ if(recargando) return; recargando = true; location.reload(); }
+  /* Solo se recarga si el usuario lo pidió: en la primera instalación el SW
+     toma el control solo (clients.claim) y eso NO debe recargar la página. */
+  navigator.serviceWorker.addEventListener('controllerchange', function(){
+    if(pedido) recargar();
+  });
+})();
 </script>
 
 <script>
@@ -3243,4 +3285,6 @@ window.addEventListener('load', function(){
   };
 });
 </script>
+<div id="swBar">🆕 Hay una versión nueva de la app
+  <button id="swGo" type="button">Actualizar</button></div>
 </body></html>
