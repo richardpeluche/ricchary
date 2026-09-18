@@ -1513,13 +1513,35 @@ function guardarCotizacion(){
     alert('No hay datos que guardar. Completa al menos el cliente o los ítems.');
     return;
   }
+  // Tope real del plan Free. Se cuenta una COTIZACIÓN por cada par
+  // "número de orden + cliente": editar la misma cotización del mismo cliente
+  // es gratis, pero sobrescribir una orden vieja con OTRO cliente cuenta como
+  // cotización nueva. El registro es aparte del historial: "Borrar historial
+  // local" no lo toca.
+  if(!esPro()){
+    const clave = claveCot(cot);
+    let usados = [];
+    try{ usados = JSON.parse(localStorage.getItem('ricchary_nums_usados')||'[]'); }catch(e){}
+    const esNuevo = usados.indexOf(clave) === -1;
+    if(esNuevo && usados.length>=10){
+      if(typeof abrirModalPro==='function') abrirModalPro();
+      return;
+    }
+  }
   let hist = getHistory();
   // Evitar duplicado por id igual (edición)
   hist = hist.filter(c=>c.id!==cot.id && String(c.num)!==String(cot.num));
   hist.unshift(cot);
-  // Límite de cotizaciones locales: Pro = 30, Free = 10
-  // Límite de cotizaciones locales: Pro = ILIMITADO, Free = 10
-  if(!esPro() && hist.length>10) hist=hist.slice(0,10);
+  if(!esPro()){
+    const clave = claveCot(cot);
+    let usados = [];
+    try{ usados = JSON.parse(localStorage.getItem('ricchary_nums_usados')||'[]'); }catch(e){}
+    if(usados.indexOf(clave)===-1){
+      usados.push(clave);
+      try{ localStorage.setItem('ricchary_nums_usados', JSON.stringify(usados)); }catch(e){}
+    }
+    if(hist.length>10) hist=hist.slice(0,10);
+  }
   saveHistory(hist);
   showHistSaveBadge();
   syncGuardar(cot);
@@ -1527,6 +1549,23 @@ function guardarCotizacion(){
   // Fijar número de orden usado y preparar el siguiente
   const nActual = parseInt(document.getElementById('docOrden')?.getAttribute('data-num')||getNextOrden(),10);
   confirmarOrden(nActual);
+}
+
+// Identifica una cotización para el conteo del plan Free: número de orden
+// + cliente normalizado. Cambiar el cliente sobre una orden vieja produce
+// una clave distinta, o sea cuenta como cotización nueva.
+function claveCot(cot){
+  var norm = function(t){ return String(t||'').toLowerCase().replace(/\s+/g,' ').trim(); };
+  return String(cot.num) + '::' + norm(cot.empresa) + '|' + norm(cot.cliente);
+}
+
+// Free agotado = ya usó sus 10 cotizaciones. Con Pro nunca es true.
+function freeAgotado(){
+  if(esPro()) return false;
+  try{
+    var usados = JSON.parse(localStorage.getItem('ricchary_nums_usados')||'[]');
+    return usados.length >= 10;
+  }catch(e){ return false; }
 }
 
 function showHistSaveBadge(){
@@ -1716,8 +1755,12 @@ function renderHistorial(){
       </div>
       <div class="hist-card-items">${(cot.items||[]).slice(0,3).map(it=>`• ${h(it.qty)} × ${h(it.desc)}`).join('<br>')+(cot.items.length>3?`<br><small>+${cot.items.length-3} ítems más...</small>`:'')}</div>
       <div class="hist-card-actions">
-        <button class="btn-hist-load" onclick="cargarCotizacion(window._hist[${idx}])">📂 Cargar en formulario</button>
-        <button class="btn-hist-load" style="background:#7c3aed" onclick="repetirCotizacion(window._hist[${idx}])">🔁 Repetir pedido</button>
+        ${!freeAgotado()
+          ? `<button class="btn-hist-load" onclick="cargarCotizacion(window._hist[${idx}])">📂 Cargar en formulario</button>
+             <button class="btn-hist-load" style="background:#7c3aed" onclick="repetirCotizacion(window._hist[${idx}])">🔁 Repetir pedido</button>`
+          : `<button class="btn-hist-load" style="opacity:.65" onclick="abrirModalPro()">🔒 Cargar en formulario</button>
+             <button class="btn-hist-load" style="background:#7c3aed;opacity:.65" onclick="abrirModalPro()">🔒 Repetir pedido</button>`
+        }
         <button class="btn-hist-agenda" onclick="agendarDesdeCot(window._hist[${idx}])">${yaAgendado(cot.num)?'🔁 Reagendar':'📅 Agendar'}</button>
         ${esFacturada(cot)?`<button class="btn-hist-vfact" onclick="verFactura('${h(cot.num)}')">📄 Ver Factura</button>`:''}
         ${cot._cloud?`<button class="btn-hist-del" onclick="eliminarCotNube('${h(cot.num)}')">🗑 Eliminar</button>`:`<button class="btn-hist-del" onclick="eliminarCot(${cot.id})">🗑 Eliminar</button>`}
