@@ -1,18 +1,17 @@
 name: Build RICCHARY APK + AAB
 
+# Solo manual: un push a main (p. ej. "Add files via upload") NO compila ni
+# publica nada. El AAB/APK quedan como artifacts del run, sin Release publico.
 on:
-  push:
-    branches: [ main ]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
     # Los secretos de firma NO van aqui a proposito: a nivel de job quedarian
-    # expuestos a TODOS los steps, incluido softprops/action-gh-release, que es
-    # codigo de terceros. Se declaran solo en los steps que realmente firman.
+    # expuestos a TODOS los steps. Se declaran solo en los steps que firman.
 
     steps:
       - uses: actions/checkout@v4
@@ -34,14 +33,6 @@ jobs:
           wget -q https://services.gradle.org/distributions/gradle-8.11.1-bin.zip -O /tmp/gradle.zip
           unzip -q /tmp/gradle.zip -d /opt/gradle
           echo "/opt/gradle/gradle-8.11.1/bin" >> $GITHUB_PATH
-
-      - name: Download app icon
-        run: |
-          curl -sL https://richardpeluche.github.io/ricchary/icon-512.png -o /tmp/icon.png
-          for density in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
-            mkdir -p android/app/src/main/res/mipmap-$density
-            cp /tmp/icon.png android/app/src/main/res/mipmap-$density/ic_launcher.png
-          done
 
       - name: Prepare keystore
         run: |
@@ -95,7 +86,7 @@ jobs:
             -Pandroid.injected.signing.key.alias="$KEY_ALIAS_VAL" \
             -Pandroid.injected.signing.key.password="$KEY_PASS"
 
-      - name: Verificar el AAB (targetSdk, version, firma)
+      - name: Verificar el AAB (package, version, SDK, URL de inicio, firma)
         env:
           KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS_VAL: ${{ secrets.KEY_ALIAS }}
@@ -111,16 +102,24 @@ jobs:
 
           dump() { java -jar /tmp/bundletool.jar dump manifest --bundle="$AAB" --xpath="$1" 2>/dev/null; }
 
+          PKG=$(dump "/manifest/@package")
+          MSDK=$(dump "/manifest/uses-sdk/@android:minSdkVersion")
           TSDK=$(dump "/manifest/uses-sdk/@android:targetSdkVersion")
           VCODE=$(dump "/manifest/@android:versionCode")
           VNAME=$(dump "/manifest/@android:versionName")
+          # DEFAULT_URL apunta a @string/launchUrl: leer el valor compilado en el AAB
+          LAUNCH=$(java -jar /tmp/bundletool.jar dump resources --bundle="$AAB" \
+            --resource="$PKG:string/launchUrl" --values 2>/dev/null | grep -o 'https://[^"]*' | head -1)
 
           echo "=================================================="
           echo " LEIDO DEL AAB (no del codigo fuente)"
           echo "=================================================="
+          echo " package          : $PKG"
+          echo " minSdkVersion    : $MSDK"
           echo " targetSdkVersion : $TSDK"
           echo " versionCode      : $VCODE"
           echo " versionName      : $VNAME"
+          echo " launchUrl        : $LAUNCH"
 
           # SHA-256 del certificado con el que se firmo realmente el AAB
           mkdir -p /tmp/sig && cd /tmp/sig
@@ -143,43 +142,35 @@ jobs:
           echo "=================================================="
 
           FAIL=0
+          [ "$PKG"   = "com.ricchary.cotizaciones" ] || { echo "::error::package=$PKG, se esperaba com.ricchary.cotizaciones."; FAIL=1; }
+          [ "$MSDK"  = "21"    ] || { echo "::error::minSdkVersion=$MSDK, se esperaba 21."; FAIL=1; }
           [ "$TSDK"  = "36"    ] || { echo "::error::targetSdkVersion=$TSDK, se esperaba 36. Play lo rechazara."; FAIL=1; }
-          [ "$VCODE" = "3"     ] || { echo "::error::versionCode=$VCODE, se esperaba 3."; FAIL=1; }
-          [ "$VNAME" = "1.0.2" ] || { echo "::error::versionName=$VNAME, se esperaba 1.0.2."; FAIL=1; }
-          if [ -n "$SHA_AAB" ] && [ -n "$SHA_KEY" ] && [ "$SHA_AAB" != "$SHA_KEY" ]; then
-            echo "::error::La firma del AAB NO coincide con el keystore. NO subir a Play."; FAIL=1
+          [ "$VCODE" = "4"     ] || { echo "::error::versionCode=$VCODE, se esperaba 4."; FAIL=1; }
+          [ "$VNAME" = "2.0.0" ] || { echo "::error::versionName=$VNAME, se esperaba 2.0.0."; FAIL=1; }
+          [ "$LAUNCH" = "https://richardpeluche.github.io/ricchary-v2/" ] || { echo "::error::launchUrl=$LAUNCH, se esperaba la de ricchary-v2."; FAIL=1; }
+          # Una firma vacia (certificado no encontrado) tambien es fallo, no se ignora
+          if [ -z "$SHA_AAB" ] || [ "$SHA_AAB" != "$SHA_KEY" ]; then
+            echo "::error::La firma del AAB no se pudo leer o NO coincide con el keystore. NO subir a Play."; FAIL=1
           fi
+          case "$(echo "$SHA_AAB" | tr 'a-f' 'A-F')" in
+            CB:83:F0:E1*) ;;
+            *) echo "::error::El certificado del AAB no empieza con CB:83:F0:E1 (clave de carga)."; FAIL=1 ;;
+          esac
           exit $FAIL
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: RICCHARY-APK-v${{ github.run_number }}
+          name: RICCHARY-APK-2.0.0-run${{ github.run_number }}
           path: android/app/build/outputs/apk/release/*.apk
           retention-days: 30
 
       - name: Upload AAB artifact
         uses: actions/upload-artifact@v4
         with:
-          name: RICCHARY-AAB-v${{ github.run_number }}
+          name: RICCHARY-AAB-2.0.0-run${{ github.run_number }}
           path: android/app/build/outputs/bundle/release/*.aab
           retention-days: 30
-
-      - name: Create Release
-        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65  # v2
-        if: github.ref == 'refs/heads/main'
-        with:
-          tag_name: v1.0.${{ github.run_number }}
-          name: RICCHARY v1.0.${{ github.run_number }}
-          body: |
-            ## RICCHARY v1.0.${{ github.run_number }}
-            - **APK**: instalacion directa en Android
-            - **AAB**: subida a Google Play Store
-          files: |
-            android/app/build/outputs/apk/release/*.apk
-            android/app/build/outputs/bundle/release/*.aab
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Limpiar keystore del workspace
         if: always()

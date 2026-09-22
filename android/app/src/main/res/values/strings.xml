@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="appName">RICCHARY</string>
-    <string name="launchUrl">https://richardpeluche.github.io/ricchary/</string>
+    <string name="launchUrl">https://richardpeluche.github.io/ricchary-v2/</string>
     <string name="assetStatements" translatable="false">
         [{\"relation\":[\"delegate_permission/common.handle_all_urls\"],\"target\":{\"namespace\":\"web\",\"site\":\"https://richardpeluche.github.io\"}}]
     </string>

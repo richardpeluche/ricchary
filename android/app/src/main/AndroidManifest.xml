@@ -13,7 +13,7 @@
         android:label="@string/appName"
         android:icon="@mipmap/ic_launcher"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+        android:theme="@style/AppTheme"
         android:allowBackup="true">
 
         <meta-data
