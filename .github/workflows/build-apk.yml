@@ -108,8 +108,14 @@ jobs:
           VCODE=$(dump "/manifest/@android:versionCode")
           VNAME=$(dump "/manifest/@android:versionName")
           # DEFAULT_URL apunta a @string/launchUrl: leer el valor compilado en el AAB
-          LAUNCH=$(java -jar /tmp/bundletool.jar dump resources --bundle="$AAB" \
-            --resource="$PKG:string/launchUrl" --values 2>/dev/null | grep -o 'https://[^"]*' | head -1)
+          # (--resource usa el formato tipo/nombre, sin el package delante)
+          RES_OUT=$(java -jar /tmp/bundletool.jar dump resources --bundle="$AAB" \
+            --resource=string/launchUrl --values 2>&1 || true)
+          LAUNCH=$(echo "$RES_OUT" | grep -o 'https://[^" ]*' | head -1)
+          # Segunda lectura independiente: la tabla de recursos compilada del modulo base
+          LAUNCH_PB=$(unzip -p "$AAB" base/resources.pb 2>/dev/null \
+            | grep -a -o 'https://richardpeluche\.github\.io/[A-Za-z0-9._/-]*' | sort -u | tr '\n' ' ')
+          [ -n "$LAUNCH" ] || { echo "Salida de bundletool dump resources:"; echo "$RES_OUT"; }
 
           echo "=================================================="
           echo " LEIDO DEL AAB (no del codigo fuente)"
@@ -120,6 +126,7 @@ jobs:
           echo " versionCode      : $VCODE"
           echo " versionName      : $VNAME"
           echo " launchUrl        : $LAUNCH"
+          echo " URLs en resources.pb : $LAUNCH_PB"
 
           # SHA-256 del certificado con el que se firmo realmente el AAB
           mkdir -p /tmp/sig && cd /tmp/sig
